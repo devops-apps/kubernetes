@@ -1,0 +1,27 @@
+[Unit]
+Description=Kubernetes Kubelet
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=docker.service
+Requires=docker.service
+
+[Service]
+WorkingDirectory=/data/apps/k8s/kubernetes
+ExecStart=/data/apps/k8s/kubernetes/bin/kubelet \
+  --bootstrap-kubeconfig=/etc/k8s/kubeconfig/kubelet-bootstrap.kubeconfig \
+  --cert-dir=/etc/k8s/ssl \
+  --root-dir=/data/apps/k8s/kubernetes/kubelet \
+  --volume-plugin-dir=/data/apps/k8s/kubernetes/kubelet/volume-plugins \
+  --config=/etc/k8s/kubernetes/kubelet.config.json \
+  --kubeconfig=/etc/k8s/kubeconfig/kubelet.kubeconfig \
+  --hostname-override=worker-k8s-n01 \
+  --pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest \
+  --allow-privileged=true \
+  --alsologtostderr=true \
+  --logtostderr=false \
+  --log-dir=/data/apps/k8s/kubernetes/kubelet/logs \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

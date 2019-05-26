@@ -1,0 +1,47 @@
+# ------------------- Deployment ------------------- #
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: eureka-service-n02
+  namespace: public-service
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  template:
+    metadata:
+      labels:
+        name: eureka-service-n02
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-k8s-n02
+      hostNetwork: true
+      containers:
+      - name: eureka
+        image: registry-mirror.mo9.com/springboot/eureka:v1.0
+        resources:
+          limits:
+            memory: 1024Mi
+          requests:
+            cpu: 300m
+            memory: 300Mi
+        ports:
+        - containerPort: 8800
+        readinessProbe:
+          tcpSocket:
+            port: 8800
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        volumeMounts:
+          - name: conf-dir
+            mountPath: /opt/conf
+            readOnly: True
+          - name: logs-dir
+            mountPath: /opt/logs
+            readOnly: false
+      volumes:
+        - name: conf-dir
+          hostPath:
+            path: /data/webs/eureka/conf
+        - name: logs-dir
+          hostPath:
+            path: /data/webs/eureka/logs

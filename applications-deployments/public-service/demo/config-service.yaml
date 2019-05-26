@@ -1,0 +1,50 @@
+# ------------------- Deployment ------------------- #
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: config-service
+  namespace: public-service
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      service: config-service
+  template:
+    metadata:
+      labels:
+        service: config-service
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-k8s-n03
+      containers:
+      - name: config-service
+        image: registry-mirror.mo9.com/public-service/config-service:v1.1
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 1024Mi
+          requests:
+            cpu: 300m
+            memory: 300Mi
+        ports:
+        - containerPort: 8080
+
+---
+# ------------------- Dashboard Service ------------------- #
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: config-service
+  labels:
+    service: config-service
+  namespace: public-service
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 8401
+  selector:
+      service: config-service

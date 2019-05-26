@@ -1,0 +1,142 @@
+# -------------------Master node  Deployment for Elasticsearch ------------------- #
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  labels:
+    elk-service: elasticsearch
+    role: master
+  name: elasticsearch-master
+  namespace: public-service
+spec:
+  replicas: 3
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      elk-service: elasticsearch
+      role: master
+  template:
+    metadata:
+      labels:
+        elk-service: elasticsearch
+        role: master
+    spec:
+      containers:
+        - name: elasticsearch-master
+          image: registry-mirror.mo9.com/public-service/elasticsearch:6.4.0
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "-c", "sysctl -w vm.max_map_count=262144; ulimit -l unlimited;"]
+          ports:
+            - containerPort: 9200
+              protocol: TCP
+            - containerPort: 9300
+              protocol: TCP
+          env:
+            - name: "cluster.name"
+              value: "elasticsearch-cluster"
+            - name: "bootstrap.memory_lock"
+              value: "true"
+            - name: "discovery.zen.ping.unicast.hosts"
+              value: "elasticsearch-discovery"
+            - name: "discovery.zen.minimum_master_nodes"
+              value: "2"
+            - name: "discovery.zen.ping_timeout"
+              value: "5s"
+            - name: "node.master"
+              value: "true"
+            - name: "node.data"
+              value: "false"
+            - name: "node.ingest"
+              value: "false"
+            - name: "ES_JAVA_OPTS"
+              value: "-Xms512m -Xmx512m"
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    elk-service: elasticsearch
+  name: elasticsearc-master
+  namespace: public-service
+spec:
+  ports:
+    - port: 9300
+      targetPort: 9300
+  selector:
+    elk-service: elasticsearch
+    role: master
+
+# -------------------Master node  Deployment for Elasticsearch ------------------- #
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  labels:
+    elk-service: elasticsearch
+    role: data
+  name: elasticsearch-data
+  namespace: public-service
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      elk-service: elasticsearch
+      role: data
+  template:
+    metadata:
+      labels:
+        elk-service: elasticsearch
+        role: data
+    spec:
+      containers:
+        - name: elasticsearch-data
+          image: registry-mirror.mo9.com/public-service/elasticsearch:6.4.0
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/bash", "-c", "sysctl -w vm.max_map_count=262144; ulimit -l unlimited;"]
+          ports:
+            - containerPort: 9200
+              protocol: TCP
+            - containerPort: 9300
+              protocol: TCP
+          volumeMounts:
+            - name: es-data
+              mountPath: /usr/share/elasticsearch/data
+          env:
+            - name: "cluster.name"
+              value: "elasticsearch-cluster"
+            - name: "bootstrap.memory_lock"
+              value: "true"
+            - name: "discovery.zen.ping.unicast.hosts"
+              value: "elasticsearch-discovery"
+            - name: "discovery.zen.ping_timeout"
+              value: "5s"
+            - name: "node.master"
+              value: "false"
+            - name: "node.data"
+              value: "true"
+            - name: "ES_JAVA_OPTS"
+              value: "-Xms512m -Xmx512m"
+      volumes:
+        - name: es-data
+          emptyDir: {}
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    elk-service: elasticsearch-data
+  name: elasticsearc-data
+  namespace: public-service
+spec:
+  ports:
+    - port: 9300
+      targetPort: 9300
+  selector:
+    elk-service: elasticsearch
+    role: data

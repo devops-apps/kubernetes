@@ -1,0 +1,37 @@
+# This is spring boot config. For more information on how to configure the springboot vaule please refer to:
+# https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+#---------------------------------------------------------------------------------------
+# apps globle setings
+#---------------------------------------------------------------------------------------
+server:
+   id01: worker-k8s-n01.mo9.com
+   id02: worker-k8s-n01.mo9.com
+   prot: 8800
+
+---
+auth:
+   user: mo9
+   password: Mo92018
+
+---
+eureka:
+   environment: production
+   datacenter: mo9
+   instance:
+      hostname: ${server.id01}
+      prefer-ip-address: false
+      instance-id: ${spring.cloud.client.ipAddress}:${spring.application.name}:${server.port}
+   client:
+      register-with-eureka: false
+      fetch-registry: false
+      prefer-same-zone-eureka: true
+      use-dns-for-fetching-service-urls: false
+      region: ShangHai
+      availability-zones:
+         Tokyo: defaultZone
+      serviceUrl:
+         defaultZone: http://${auth.user}:${auth.password}@${server.id02}:${server.prot}/register/eureka/
+   server:
+      enableSelfPreservation: true
+      eviction-interval-timer-in-ms: 5000
+      waitTimeInMsWhenSyncEmpty: 0

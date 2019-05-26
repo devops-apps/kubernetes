@@ -1,0 +1,84 @@
+# -------------------Master node  Deployment for Elasticsearch ------------------- #
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  labels:
+    elk-service: elasticsearch
+    role: master
+  name: elasticsearch-master
+  namespace: public-service
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      elk-service: elasticsearch
+      role: master
+  template:
+    metadata:
+      labels:
+        elk-service: elasticsearch
+        role: master
+    spec:
+      nodeSelector:
+        service_type: public
+      containers:
+        - name: elasticsearch-master
+          image: registry-mirror.mo9.com/public-service/elasticsearch:6.6.0
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 1024Mi
+            requests:
+              cpu: 300m
+              memory: 300Mi
+          ports:
+            - containerPort: 9200
+              protocol: TCP
+            - containerPort: 9300
+              protocol: TCP
+          env:
+            - name: "cluster.name"
+              value: "elasticsearch-cluster"
+            - name: "node.name"
+              value: "${HOSTNAME}"
+            - name: "network.host"
+              value: "_site_"
+            - name: "bootstrap.memory_lock"
+              value: "false"
+            - name: "discovery.zen.ping.unicast.hosts"
+              value: "${HOSTNAME}"
+            - name: "discovery.zen.minimum_master_nodes"
+              value: "1"
+            - name: "discovery.zen.ping_timeout"
+              value: "3s"
+            - name: "node.master"
+              value: "true"
+            - name: "node.data"
+              value: "true"
+            - name: "node.ingest"
+              value: "true"
+            - name: "ES_JAVA_OPTS"
+              value: "-Xms800m -Xmx800m"
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    elk-service: elasticsearch
+  name: elasticsearc-master
+  namespace: public-service
+spec:
+  type: NodePort
+  ports:
+    - name: 9300-prot
+      port: 9300
+      targetPort: 9300
+    - name: 9200-prot
+      port: 9200
+      targetPort: 9300
+      nodePort: 8404
+  selector:
+    elk-service: elasticsearch
+    role: master

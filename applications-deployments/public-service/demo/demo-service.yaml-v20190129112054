@@ -1,0 +1,64 @@
+# ------------------- Deployment ------------------- #
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: demo-service
+  namespace: public-service
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      service: demo-service
+  template:
+    metadata:
+      labels:
+        service: demo-service
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: worker-k8s-n03
+      containers:
+      - name: demo-server
+        image: registry-mirror.mo9.com/public-service/demo-service:dev-v20190129112054
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 1024Mi
+          requests:
+            cpu: 300m
+            memory: 300Mi
+        ports:
+        - containerPort: 8080
+      - name: app-client
+        image: registry-mirror.mo9.com/public-service/app-client:dev-v20190129112054
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 1024Mi
+          requests:
+            cpu: 300m
+            memory: 300Mi
+        ports:
+        - containerPort: 8081
+
+---
+# ------------------- Dashboard Service ------------------- #
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: demo-service
+  namespace: public-service
+spec:
+  type: NodePort
+  ports:
+    - name: demo-server
+      port: 8080
+      targetPort: 8080
+      nodePort: 8402
+    - name: app-client
+      port: 8081
+      targetPort: 8081
+      nodePort: 8403
+  selector:
+      service: demo-service

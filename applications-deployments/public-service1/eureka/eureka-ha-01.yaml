@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: eureka-ha-n01
+  namespace: public-service
+spec:
+  nodeSelector:
+    service_type: public
+  containers:
+  - name: eureka
+    image: registry-mirror.mo9.com/public-service/eureka:v1.0
+    ports:
+    - containerPort: 80
