@@ -16,7 +16,7 @@ SIZE=8G
 USER_DEVOPS=gamaxwin
 SSH_DEVOPS=/home/${USER_DEVOPS}/.ssh
 PORT=8989DATA=/data
-DISK_NMAE=/dev/sdb
+DISK_NAME=/dev/sdb
 KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCnJ0UYNQYpRei2rtYNlbxcJhpOtvhnLPPyAMqo3gpQ2jGJ75ASlu1F1sID84qytgZi0KlQFngYTIh5Lsn7nAy/TT9stVwLOLC1P7b8YgXsfBUNhRcfC1RDasdAyHns+W3hxSHcSGS/hUA33T3sT3f/ltucl7telUSKOL+9p6AI7ckPMn2j9zKqLAaTDZKKUZ4gSSnnX9T7PQX91y94raynrS8HvKK6jBUmlWbYhALj1Zhfj840gmLxo8y91i5WvfieZ+DvjfH5Y89leSv8W5uVZC8PDkIw3aJ7YFvJZi4RIwFl2zKtDt4KhwIm9evfZfM4t9fuLCIHxrc4ZrJ+3asd devops user"
 MEM_STATUS=$(free -m | grep Swap | awk -F ":" '{print $1}')
 DISK_STATUS=$(ls -l ${DISK_NAME}* | wc -l)
@@ -113,7 +113,7 @@ echo "..........................................................................
 #Add sudo permissions to devops in /etc/sudoers file .
 sudo cp -r  /etc/sudoers /etc/sudoers.bak
 sudo sed -i  '/Cmnd_Alias USERSHELL/d'  /etc/sudoers
-sudo sed -i  '/$USER_DEVOPS/d' /etc/sudoers
+sudo sed -i  "/\$USER_DEVOPS/d" /etc/sudoers
 sudo sed -i  '/Defaults    requiretty/s/^Defaults/#Defaults/g'  /etc/sudoers 
 sudo sed -i  "s:\/usr/bin:&\:/usr/local/sbin:"  /etc/sudoers
 sudo sed -i  "/## Allow root to run any commands anywhere/a\\$USER_DEVOPS        ALL=(ALL)       NOPASSWD: ALL"  /etc/sudoers
@@ -124,7 +124,7 @@ sudo sed -i  '/#RSAAuthentication yes/s/^#RSAAuthentication yes/RSAAuthenticatio
 sudo sed -i '/#PubkeyAuthentication yes/s/^#PubkeyAuthentication yes/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
 sudo sed -i "/#AuthorizedKeysFile/s/^#//g" /etc/ssh/sshd_config
 sudo sed -i "/PermitRootLogin yes/s/yes/no/g" /etc/ssh/sshd_config
-sudo sed -i  '/AllowUsers $USER_DEVOPS/d'  /etc/ssh/sshd_config
+sudo sed -i  "/AllowUsers \$USER_DEVOPS/d"  /etc/ssh/sshd_config
 sudo sed -i  "/^PasswordAuthentication yes/a\\AllowUsers $USER_DEVOPS"  /etc/ssh/sshd_config
 sudo service sshd reload  >>/dev/null 2>&1
 
