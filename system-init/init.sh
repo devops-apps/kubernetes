@@ -194,7 +194,7 @@ net.ipv4.tcp_mem = 786432 1048576 1572864
 net.ipv4.ip_local_port_range = 1024 65535
 net.core.somaxconn = 65535
 EOF
-echo "INFO:update and optimizing the server system success!"
+echo "INFO: Update and optimizing the server system success !"
 echo ".........................................................................."
 
 ############################ Reboot server system #############################
