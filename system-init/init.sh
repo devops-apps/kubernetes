@@ -43,23 +43,35 @@ if [ "$INPUT" = "y" ]; then
                echo ".........................................................................."
 	       echo -e "INFO: The swap memory of system has already add... Don't Repeat to add !"
                echo ".........................................................................."
+               #Create Primary partition
+               echo -ne "n\np\n1\n\n\nt\n8e\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
+               #Create lvm and formatting
+               pvcreate ${DISK_NMAE}1 >>/dev/null 2>&1
+               vgcreate vg01 ${DISK_NMAE}1 >>/dev/null 2>&1
+               lvcreate -l 100%VG -n data  vg01 >>/dev/null 2>&1
+               mkfs.xfs /dev/vg01/data >>/dev/null 2>&1
+               echo "INFO: Create lv volume success..."
+               echo ".........................................................................."
+               echo "INFO: The disk initializes success..."
+               echo ".........................................................................."
           else
-	       echo -ne "n\np\n1\n\n+$SIZE\nt\n82\nw\nEOF\n" |fdisk $DISK_NMAE  >>/dev/null 2>&1
+               echo -ne "n\np\n1\n\n+$SIZE\nt\n82\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
 	       #formatting swap
 	       mkswap ${DISK_NMAE}1 >>/dev/null 2>&1
 	       echo "INFO: Create swap volume success..."
+               #Create Primary partition
+               echo -ne "n\np\n2\n\n\nt\n8e\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
+               #Create lvm and formatting
+               pvcreate ${DISK_NMAE}2 >>/dev/null 2>&1
+               vgcreate vg01 ${DISK_NMAE}2 >>/dev/null 2>&1
+               lvcreate -l 100%VG -n data  vg01 >>/dev/null 2>&1
+               mkfs.xfs /dev/vg01/data >>/dev/null 2>&1
+               echo ".........................................................................."
+               echo "INFO: Create lv volume success..."
+               echo ".........................................................................."
+               echo "INFO: The disk initializes success..."
+               echo ".........................................................................."
 	  fi
-          #Create Primary partition
-          echo -ne "n\np\n2\n\n\n\nt\n2\n8e\nw\nEOF\n" |fdisk $DISK_NMAE  >>/dev/null 2>&1
-          #Create lvm and formatting
-          pvcreate ${DISK_NMAE}2 >>/dev/null 2>&1
-          vgcreate vg01 ${DISK_NMAE}2 >>/dev/null 2>&1
-          lvcreate -l 100%VG -n data  vg01 >>/dev/null 2>&1
-          mkfs.xfs /dev/vg01/data >>/dev/null 2>&1
-          echo "INFO: Create lv volume success..."
-          echo ".........................................................................."
-          echo "INFO: The disk initializes success..."
-          echo ".........................................................................."
      fi
 fi
 if [ "$INPUT" = "n" ]; then
@@ -104,6 +116,7 @@ fi
 #devops
 if [ -d $SSH_DEVOPS ]; then
      echo "the gamaxwin ssh public key is already create..."  >>/dev/null 2>&1
+     echo ".........................................................................."
 else
      sudo -u $USER_DEVOPS -H mkdir $SSH_DEVOPS
      sudo -u $USER_DEVOPS -H echo -e "$KEY" > $SSH_DEVOPS/authorized_keys
