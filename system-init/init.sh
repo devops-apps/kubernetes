@@ -29,11 +29,11 @@ read -p "Initialize the system to the default state, the operation will lead to 
 if [ "$STATE" = "y" ]; then
 
 ############################# Initializes the disk /dev/vdb ####################################
-read -p "Do you want format the disk $DISK_NMAE, please input [y/n]:" INPUT
+read -p "Do you want format the disk $DISK_NAME, please input [y/n]:" INPUT
 if [ "$INPUT" = "y" ]; then
      if [ $DISK_STATUS -gt 1 ]; then
           echo ".........................................................................."
-          echo "INFO: The disk $DISK_NMAE is already format..."
+          echo "INFO: The disk $DISK_NAME is already format..."
           echo ".........................................................................."
      else       
           #install lvm2 tools
@@ -46,8 +46,8 @@ if [ "$INPUT" = "y" ]; then
                #Create Primary partition
                echo -ne "n\np\n1\n\n\nt\n8e\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
                #Create lvm and formatting
-               pvcreate ${DISK_NMAE}1 >>/dev/null 2>&1
-               vgcreate vg01 ${DISK_NMAE}1 >>/dev/null 2>&1
+               pvcreate ${DISK_NAME}1 >>/dev/null 2>&1
+               vgcreate vg01 ${DISK_NAME}1 >>/dev/null 2>&1
                lvcreate -l 100%VG -n data  vg01 >>/dev/null 2>&1
                mkfs.xfs /dev/vg01/data >>/dev/null 2>&1
                echo "INFO: Create lv volume success..."
@@ -57,13 +57,13 @@ if [ "$INPUT" = "y" ]; then
           else
                echo -ne "n\np\n1\n\n+$SIZE\nt\n\n82\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
 	       #formatting swap
-	       mkswap ${DISK_NMAE}1 >>/dev/null 2>&1
+	       mkswap ${DISK_NAME}1 >>/dev/null 2>&1
 	       echo "INFO: Create swap volume success..."
                #Create Primary partition
                echo -ne "n\np\n2\n\n\nt\n2\n8e\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
                #Create lvm and formatting
-               pvcreate ${DISK_NMAE}2 >>/dev/null 2>&1
-               vgcreate vg01 ${DISK_NMAE}2 >>/dev/null 2>&1
+               pvcreate ${DISK_NAME}2 >>/dev/null 2>&1
+               vgcreate vg01 ${DISK_NAME}2 >>/dev/null 2>&1
                lvcreate -l 100%VG -n data  vg01 >>/dev/null 2>&1
                mkfs.xfs /dev/vg01/data >>/dev/null 2>&1
                echo ".........................................................................."
