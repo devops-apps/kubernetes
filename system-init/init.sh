@@ -113,7 +113,7 @@ echo "..........................................................................
 #Add sudo permissions to devops in /etc/sudoers file .
 sudo cp -r  /etc/sudoers /etc/sudoers.bak
 sudo sed -i  '/Cmnd_Alias USERSHELL/d'  /etc/sudoers
-sudo sed -i  "/\$USER_DEVOPS/d" /etc/sudoers
+sudo sed -i  "/$USER_DEVOPS/d" /etc/sudoers
 sudo sed -i  '/Defaults    requiretty/s/^Defaults/#Defaults/g'  /etc/sudoers 
 sudo sed -i  "s:\/usr/bin:&\:/usr/local/sbin:"  /etc/sudoers
 sudo sed -i  "/## Allow root to run any commands anywhere/a\\$USER_DEVOPS        ALL=(ALL)       NOPASSWD: ALL"  /etc/sudoers
@@ -124,7 +124,7 @@ sudo sed -i  '/#RSAAuthentication yes/s/^#RSAAuthentication yes/RSAAuthenticatio
 sudo sed -i '/#PubkeyAuthentication yes/s/^#PubkeyAuthentication yes/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
 sudo sed -i "/#AuthorizedKeysFile/s/^#//g" /etc/ssh/sshd_config
 sudo sed -i "/PermitRootLogin yes/s/yes/no/g" /etc/ssh/sshd_config
-sudo sed -i  "/AllowUsers \$USER_DEVOPS/d"  /etc/ssh/sshd_config
+sudo sed -i  "/AllowUsers $USER_DEVOPS/d"  /etc/ssh/sshd_config
 sudo sed -i  "/^PasswordAuthentication yes/a\\AllowUsers $USER_DEVOPS"  /etc/ssh/sshd_config
 sudo service sshd reload  >>/dev/null 2>&1
 
