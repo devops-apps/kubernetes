@@ -55,12 +55,12 @@ if [ "$INPUT" = "y" ]; then
                echo "INFO: The disk initializes success..."
                echo ".........................................................................."
           else
-               echo -ne "n\np\n1\n\n+$SIZE\nt\n82\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
+               echo -ne "n\np\n1\n\n+$SIZE\nt\n\n82\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
 	       #formatting swap
 	       mkswap ${DISK_NMAE}1 >>/dev/null 2>&1
 	       echo "INFO: Create swap volume success..."
                #Create Primary partition
-               echo -ne "n\np\n2\n\n\nt\n8e\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
+               echo -ne "n\np\n2\n\n\nt\n2\n8e\nw\nEOF\n" |fdisk $DISK_NAME  >>/dev/null 2>&1
                #Create lvm and formatting
                pvcreate ${DISK_NMAE}2 >>/dev/null 2>&1
                vgcreate vg01 ${DISK_NMAE}2 >>/dev/null 2>&1
