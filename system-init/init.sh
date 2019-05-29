@@ -40,7 +40,9 @@ if [ "$INPUT" = "y" ]; then
           yum install lvm2 -y  >>/dev/null 2>&1
           #create swap  partition
           if [ "$MEM_STATUS" = "Swap" ]; then
+               echo ".........................................................................."
 	       echo -e "INFO: The swap memory of system has already add... Don't Repeat to add !"
+               echo ".........................................................................."
           else
 	       echo -ne "n\np\n1\n\n+$SIZE\nt\n82\nw\nEOF\n" |fdisk $DISK_NMAE  >>/dev/null 2>&1
 	       #formatting swap
