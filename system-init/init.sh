@@ -31,6 +31,7 @@ if [ "$STATE" = "y" ]; then
 read -p "Do you want format the disk $DISK_NMAE, please input [y/n]:" INPUT
 if [ "$INPUT" = "y" ]; then
      if [ $DISK_STATUS -gt 1 ]; then
+          echo ".........................................................................."
           echo "INFO: The disk $DISK_NMAE is already format..."
           echo ".........................................................................."
      else       
@@ -132,7 +133,7 @@ sudo service sshd reload  >>/dev/null 2>&1
 systemctl stop firewalld.service >>/dev/null 2>&1
 systemctl disable firewalld.service >>/dev/null 2>&1
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
-setenforce 0
+setenforce 0 >>/dev/null 2>&1
 sed -i "s:centos/swap rhgb:& ipv6.disable=1 :" /etc/sysconfig/grub 
 grub2-mkconfig -o /boot/grub2/grub.cfg >>/dev/null 2>&1
 
