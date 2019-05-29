@@ -13,9 +13,10 @@
 # Variable settings
 PATH=/bin:/sbin:/usr/bin:/usr/sbin && export PATH
 SIZE=8G
+PORT=8989
 USER_DEVOPS=gamaxwin
 SSH_DEVOPS=/home/${USER_DEVOPS}/.ssh
-PORT=8989DATA=/data
+DATA=/data
 DISK_NAME=/dev/sdb
 KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCnJ0UYNQYpRei2rtYNlbxcJhpOtvhnLPPyAMqo3gpQ2jGJ75ASlu1F1sID84qytgZi0KlQFngYTIh5Lsn7nAy/TT9stVwLOLC1P7b8YgXsfBUNhRcfC1RDasdAyHns+W3hxSHcSGS/hUA33T3sT3f/ltucl7telUSKOL+9p6AI7ckPMn2j9zKqLAaTDZKKUZ4gSSnnX9T7PQX91y94raynrS8HvKK6jBUmlWbYhALj1Zhfj840gmLxo8y91i5WvfieZ+DvjfH5Y89leSv8W5uVZC8PDkIw3aJ7YFvJZi4RIwFl2zKtDt4KhwIm9evfZfM4t9fuLCIHxrc4ZrJ+3asd devops user"
 MEM_STATUS=$(free -m | grep Swap | awk -F ":" '{print $1}')
