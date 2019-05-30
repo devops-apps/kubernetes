@@ -132,8 +132,8 @@ sudo cp -r  /etc/sudoers /etc/sudoers.bak
 sudo sed -i  '/Cmnd_Alias USERSHELL/d'  /etc/sudoers
 sudo sed -i  "/$USER_DEVOPS/d" /etc/sudoers
 sudo sed -i  '/Defaults    requiretty/s/^Defaults/#Defaults/g'  /etc/sudoers 
-sudo sed -ne  "/\/usr\/sbin:/p" /etc/sudoers | sed -i "s:\:/usr/local/bin/::"
-sudo sed -i  "s:\/usr/bin:&\:/usr/local/bin"  /etc/sudoers
+sudo sed -ne "/\/usr\/sbin:/p" /etc/sudoers | sed -i "s/:\/usr\/local\/sbin//g"
+sudo sed -i  "s:\/usr/bin:&\:/usr/local/sbin"  /etc/sudoers
 sudo sed -i  "/## Allow root to run any commands anywhere/a\\$USER_DEVOPS        ALL=(ALL)       NOPASSWD: ALL"  /etc/sudoers
 
 #Configure SSH server and client to use EFS logon while Public Key Authentication.
