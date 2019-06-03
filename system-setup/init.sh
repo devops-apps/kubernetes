@@ -12,9 +12,16 @@
 ######################################################################
 
 
+[ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
+
 #################### Variable parameter setting ######################
 USER=k8s
 
+
+read -p "Do you want init for system ,please make sure the operation? please input [y/n]:" STATE
+
+#./start
+if [ "$STATE" = "y" ]; then
 
 ########## Init settings of system ##########
 # Install the system dependencies package.
@@ -30,13 +37,13 @@ swapoff -a  >>/dev/null 2>&1
 sed -i 's/.*swap.*/#&/' /etc/fstab
 
 # Disable the system selinux.
-setenforce  0 
+setenforce  0 >>/dev/null 2>&1
 sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/sysconfig/selinux  >>/dev/null 2>&1
 sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config  >>/dev/null 2>&1
 sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/sysconfig/selinux >>/dev/null 2>&1
 sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/selinux/config  >>/dev/null 2>&1
 echo ".........................................................................."
-echo "INFO: Install successd of system ..."
+echo "INFO: Initialization successd of system ..."
 
 
 ########## Optimization kernel of system ##########
@@ -46,19 +53,19 @@ sudo modprobe ip_vs
 sudo modprobe ip_conntrack 
 
 # Setting kubernetes  kernel parameters.
-sudo sed -i '/net.ipv4.ip_forward=/d' /etc/sysctl.conf
-sudo sed -i '/net.bridge.bridge-nf-call-iptables=/d'  /etc/sysctl.conf
-sudo sed -i '/net.bridge.bridge-nf-call-ip6tables=/d'  /etc/sysctl.conf
-sudo sed -i '/net.ipv4.ip_forward=/d'  /etc/sysctl.conf
-sudo sed -i '/net.ipv4.tcp_tw_recycle=/d'  /etc/sysctl.conf
-sudo sed -i '/vm.swappiness=/d'  /etc/sysctl.conf
-sudo sed -i '/vm.overcommit_memory=/d'  /etc/sysctl.conf
-sudo sed -i '/vm.panic_on_oom=/d'  /etc/sysctl.conf
-sudo sed -i '/fs.inotify.max_user_watches=/d'  /etc/sysctl.conf
-sudo sed -i '/fs.file-max=/d'  /etc/sysctl.conf
-sudo sed -i '/fs.nr_open=/d'  /etc/sysctl.conf
-sudo sed -i '/net.ipv6.conf.all.disable_ipv6=/d'  /etc/sysctl.conf
-sudo sed -i '/net.netfilter.nf_conntrack_max=/d'  /etc/sysctl.conf
+sudo sed -i '/net.ipv4.ip_forward/d' /etc/sysctl.conf
+sudo sed -i '/net.bridge.bridge-nf-call-iptables/d'  /etc/sysctl.conf
+sudo sed -i '/net.bridge.bridge-nf-call-ip6tables/d'  /etc/sysctl.conf
+sudo sed -i '/net.ipv4.ip_forward/d'  /etc/sysctl.conf
+sudo sed -i '/net.ipv4.tcp_tw_recycle/d'  /etc/sysctl.conf
+sudo sed -i '/vm.swappiness/d'  /etc/sysctl.conf
+sudo sed -i '/vm.overcommit_memory/d'  /etc/sysctl.conf
+sudo sed -i '/vm.panic_on_oom/d'  /etc/sysctl.conf
+sudo sed -i '/fs.inotify.max_user_watches/d'  /etc/sysctl.conf
+sudo sed -i '/fs.file-max/d'  /etc/sysctl.conf
+sudo sed -i '/fs.nr_open/d'  /etc/sysctl.conf
+sudo sed -i '/net.ipv6.conf.all.disable_ipv6/d'  /etc/sysctl.conf
+sudo sed -i '/net.netfilter.nf_conntrack_max/d'  /etc/sysctl.conf
 cat >/etc/sysctl.d/kubernetes.conf<<EOF
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
@@ -73,7 +80,7 @@ fs.nr_open=52706963
 net.ipv6.conf.all.disable_ipv6=1
 net.netfilter.nf_conntrack_max=2310720 
 EOF
-sysctl -p /etc/sysctl.d/kubernetes.conf
+sysctl -p /etc/sysctl.d/kubernetes.conf  >>/dev/null 2>&1
 
 # Setting system time zone.
 timedatectl set-timezone Asia/Shanghai
@@ -91,4 +98,11 @@ egrep "^$USER" /etc/passwd > /dev/null
 if [ $? -ne 0 ]; then
      groupadd $USER
      useradd -g $USER -d /var/lib/k8s -c "Kubernetes Service" -m -s /sbin/nogin  $USER
+fi
+
+fi
+#./End
+
+if [ "$STATE" = "n" ]; then
+     exit 0
 fi
