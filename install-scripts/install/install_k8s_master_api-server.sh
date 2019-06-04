@@ -16,21 +16,21 @@
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
 CONF_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
-DOWNLOAD_URL=https://devops.mo9.com/download
+DOWNLOAD_URL=https://github.com/devops-apps/download/blob/master/kubernetes/v1.14.2/kubernetes-server-linux-amd64.tar.gz
 VERSION=v1.12.0
 BIN_NAME=kube-apiserver
+ETC_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379
 
 
 ### 1.Check if the install directory exists.
 if [ ! -d $K8S_INSTALL_PATH ]; then
      mkdir -p $K8S_INSTALL_PATH
-     
 fi
 
 ### 2.Install kube-apiserver binary of kubernetes.
 mkdir -p $K8S_INSTALL_PATH/bin >>/dev/null
 if [ ! -f "$SOFTWARE/kubernetes-server-linux-amd64.tar.gz" ]; then
-     wget ${DOWNLOAD}/${VERSION}/kubernetes-server-linux-amd64.tar.gz -P $SOFTWARE
+     wget $DOWNLOAD_URL -P $SOFTWARE
 fi
 cd $SOFTWARE && tar -xzf kubernetes-server-linux-amd64.tar.gz -C ./
 cp -fp kubernetes/server/bin/$BIN_NAME $K8S_INSTALL_PATH/bin
@@ -44,7 +44,6 @@ cat >/usr/lib/systemd/system/kube-apiserver.service<<"EOF"
 Description=Kubernetes API Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
-
 [Service]
 User=k8s
 Type=notify
@@ -71,7 +70,7 @@ ExecStart=/data/apps/k8s/kubernetes/bin/kube-apiserver \
   --etcd-cafile=/etc/k8s/ssl/ca.pem \
   --etcd-certfile=/etc/k8s/ssl/etcd.pem \
   --etcd-keyfile=/etc/k8s/ssl/etcd-key.pem \
-  --etcd-servers=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379 \
+  --etcd-servers=${ETC_ENDPOIDS} \
   --enable-swagger-ui=true \
   --allow-privileged=true \
   --apiserver-count=3 \
@@ -85,7 +84,6 @@ ExecStart=/data/apps/k8s/kubernetes/bin/kube-apiserver \
   --logtostderr=false \
   --log-dir=/data/apps/k8s/kubernetes/logs/kube-apiserver \
   --v=2
-
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536
