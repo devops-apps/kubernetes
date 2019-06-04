@@ -16,9 +16,9 @@
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
 CONF_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
-DOWNLOAD_URL=https://devops.mo9.com/download
-VERSION=v1.12.0
-BIN_NAME=kube-apiserver
+DOWNLOAD_URL=https://github.com/devops-apps/download/blob/master/kubernetes/v1.14.2/kubernetes-server-linux-amd64.tar.gz
+VERSION=v1.14.2
+BIN_NAME=kube-schduler
 
 
 ### 1.Check if the install directory exists.

@@ -17,7 +17,7 @@ K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
 CONF_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
 DOWNLOAD_URL=https://github.com/devops-apps/download/blob/master/kubernetes/v1.14.2/kubernetes-server-linux-amd64.tar.gz
-VERSION=v1.12.0
+VERSION=v1.14.2
 BIN_NAME=kube-controller-manager
 
 
