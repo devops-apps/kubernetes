@@ -16,7 +16,7 @@
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
 CONF_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
-DOWNLOAD_URL=https://devops.mo9.com/download
+DOWNLOAD_URL=https://github.com/devops-apps/download/blob/master/kubernetes/v1.14.2/kubernetes-server-linux-amd64.tar.gz
 VERSION=v1.12.0
 BIN_NAME=kube-controller-manager
 
@@ -30,7 +30,7 @@ fi
 ### 2.Install kube-controller-manager binary of kubernetes.
 mkdir -p $K8S_INSTALL_PATH/bin >>/dev/null
 if [ ! -f "$SOFTWARE/kubernetes-server-linux-amd64.tar.gz" ]; then
-     wget ${DOWNLOAD}/${VERSION}/kubernetes-server-linux-amd64.tar.gz -P $SOFTWARE
+     wget $DOWNLOAD_URL -P $SOFTWARE
 fi
 cd $SOFTWARE && tar -xzf kubernetes-server-linux-amd64.tar.gz -C ./
 cp -fp kubernetes/server/bin/$BIN_NAME $K8S_INSTALL_PATH/bin
