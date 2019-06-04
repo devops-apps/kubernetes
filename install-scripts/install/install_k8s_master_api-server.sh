@@ -16,11 +16,10 @@
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
 CONF_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
-DOWNLOAD_URL=https://github.com/devops-apps/download/blob/master/kubernetes/v1.14.2/kubernetes-server-linux-amd64.tar.gz
 VERSION=v1.14.2
-BIN_NAME=kube-apiserver
+DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/${VERSION}/kubernetes-server-linux-amd64.tar.gz
 ETC_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379
-
+BIN_NAME=kube-apiserver
 
 ### 1.Check if the install directory exists.
 if [ ! -d $K8S_INSTALL_PATH ]; then

@@ -33,7 +33,7 @@ if [ ! -d $SSL_PATH ];then
      mkdir -p $SSL_PATH
      chmod 755 $SSL_PATH
      mkdir -p $CA_PATH
-     chmod -R 755 $XA_PATH
+     chmod -R 755 $CA_PATH
 fi
 
 #2.Install the cfssl tools

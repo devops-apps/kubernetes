@@ -18,8 +18,7 @@ CONF_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
 VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/${VERSION}/kubernetes-server-linux-amd64.tar.gz
-BIN_NAME=kube-controller-manager
-
+BIN_NAME=kube-proxy
 
 ### 1.Check if the install directory exists.
 if [ ! -d $K8S_INSTALL_PATH ]; then
@@ -27,7 +26,7 @@ if [ ! -d $K8S_INSTALL_PATH ]; then
      
 fi
 
-### 2.Install kube-controller-manager binary of kubernetes.
+### 2.Install the kube-proxy binary.
 mkdir -p $K8S_INSTALL_PATH/bin >>/dev/null
 if [ ! -f "$SOFTWARE/kubernetes-server-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE
@@ -38,42 +37,41 @@ ln -sf  $K8S_INSTALL_PATH/bin/* /usr/local/bin
 chown -R k8s:k8s $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
-### 3.Install the kube-controller-manager service.
-cat >/usr/lib/systemd/system/kube-controller-manager.service<<"EOF"
+
+### 3.Config the kube-proxy conf.
+mkdir -p >$CONF_PATH >>/dev/null
+cat >$CONF_PATH/kube-proxy.config.yaml<<"EOF"
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+bindAddress: 10.0.0.22
+clientConnection:
+  kubeconfig: /etc/k8s/kubernetes/kube-proxy.kubeconfig
+clusterCIDR: 10.10.0.0/16
+healthzBindAddress: 10.0.0.22:10256
+hostnameOverride: kube-node2
+kind: KubeProxyConfiguration
+metricsBindAddress: 10.0.0.22:10249
+mode: "ipvs"
+EOF
+
+
+### 4.Install the kube-proxy service.
+cat >/usr/lib/systemd/system/kube-proxy.service <<"EOF"
 [Unit]
-Description=Kubernetes Controller Manager
+Description=Kubernetes Kube-Proxy Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+After=network.target
 
 [Service]
-User=k8s
-ExecStart=/data/apps/k8s/kubernetes/bin/kube-controller-manager \
-  --port=0 \
-  --secure-port=10252 \
-  --bind-address=127.0.0.1 \
-  --kubeconfig=/etc/k8s/kubeconfig/kube-controller-manager.kubeconfig \
-  --service-cluster-ip-range=10.254.0.0/16 \
-  --cluster-name=kubernetes \
-  --cluster-signing-cert-file=/etc/k8s/ssl/ca.pem \
-  --cluster-signing-key-file=/etc/k8s/ssl/ca-key.pem \
-  --root-ca-file=/etc/k8s/ssl/ca.pem \
-  --service-account-private-key-file=/etc/k8s/ssl/ca-key.pem \
-  --leader-elect=true \
-  --feature-gates=RotateKubeletServerCertificate=true \
-  --controllers=*,bootstrapsigner,tokencleaner \
-  --horizontal-pod-autoscaler-use-rest-clients=true \
-  --horizontal-pod-autoscaler-sync-period=10s \
-  --tls-cert-file=/etc/k8s/ssl/kube-controller-manager.pem \
-  --tls-private-key-file=/etc/k8s/ssl/kube-controller-manager-key.pem \
-  --use-service-account-credentials=true \
+WorkingDirectory=/var/lib/kube-proxy
+ExecStart=/opt/k8s/bin/kube-proxy \
+  --config=/etc/k8s/kubernetes/kube-proxy.config.yaml \
   --alsologtostderr=true \
   --logtostderr=false \
-  --log-dir=/data/apps/k8s/kubernetes/logs/kube-controller-manager \
-  --flex-volume-plugin-dir=/data/apps/k8s/kubernetes/libexec/kubernetes \
+  --log-dir=/data/apps/k8s/kubernetes/logs/kube-proxy \
   --v=2
-
-Restart=on
 Restart=on-failure
 RestartSec=5
+LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
