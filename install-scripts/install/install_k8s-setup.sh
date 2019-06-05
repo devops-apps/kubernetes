@@ -106,8 +106,16 @@ if [ $? -ne 0 ]; then
      useradd -g $USER -d /var/lib/k8s -c "Kubernetes Service" -m -s /sbin/nogin  $USER
 fi
 
-fi  [ ! -d $CLUSTER_INSTALL_DIR || ! -d $CA_DIR ]; then
-      mkdir -p  $CLUSTER_INSTALL_DIR  && mkdir -P $CA_DIR
+if  [ ! -d $CLUSTER_INSTALL_DIR ] 
+      mkdir -p  $CLUSTER_INSTALL_DIR 
+      mkdir -P $CA_DIR
+      if [ ! -d $CA_DIR ]; then
+           mkdir -P $CA_DIR
+      fi
+else
+      if [ ! -d $CA_DIR ]; then
+           mkdir -P $CA_DIR
+      fi
 fi
 
 fi
