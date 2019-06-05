@@ -66,4 +66,3 @@ ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$ETCD_PACKAGE_NAME dest=${SOF
 #flannel package
 ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}"
 ansible worker-k8s-vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}"
-

@@ -17,9 +17,9 @@ K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
 CA_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
 VERSION=v1.14.2
-DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/${VERSION}/kubernetes-server-linux-amd64.tar.gz
+DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
 BIN_NAME=kubectl
-KUBE_APISERVER=https://dev-kube-api.mo9.com
+KUBE_APISERVER_URL=https://dev-kube-api.mo9.com
 
 
 ### 1.Check if the install directory exists.
@@ -30,10 +30,10 @@ fi
 
 ### 2.Install the kube-proxy binary.
 mkdir -p $K8S_INSTALL_PATH/bin >>/dev/null
-if [ ! -f "$SOFTWARE/kubernetes-server-linux-amd64.tar.gz" ]; then
+if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE
 fi
-cd $SOFTWARE && tar -xzf kubernetes-server-linux-amd64.tar.gz -C ./
+cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp kubernetes/server/bin/$BIN_NAME $K8S_INSTALL_PATH/bin
 ln -sf  $K8S_INSTALL_PATH/bin/* /usr/local/bin
 chown -R k8s:k8s $K8S_INSTALL_PATH
@@ -42,14 +42,14 @@ chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.create kube-config for kubectl
 kubectl config set-cluster kubernetes \
-  --certificate-authority=$CA_PATH/ca.pem \
+  --certificate-authority=${CA_PATH}/ca.pem \
   --embed-certs=true \
-  --server=${KUBE_APISERVER}
+  --server=${KUBE_APISERVER_URL}
 # set clinet auth parameters
 kubectl config set-credentials admin \
   --client-certificate=$CA_PATH/admin.pem \
   --embed-certs=true \
-  --client-key=/etc/kubernetes/ssl/admin-key.pem
+  --client-key=${CA_PATH}/admin-key.pem
 # set up  and down context of parameters
 kubectl config set-context kubernetes \
   --cluster=kubernetes \

@@ -13,8 +13,8 @@
 
 
 #################### Variable parameter setting ######################
-SSL_PATH=/data/apps/k8s/cfssl
-CA_PATH=/etc/k8s/ssl
+SSL_BIN_PATH=/data/apps/k8s/cfssl
+CA_DIR=/etc/k8s/ssl
 VIP_KUBEAPI_OUTSIDE=192.168.20.100
 VIP_KUBEAPI_INSIDE=10.10.10.100
 MASTER1_IP=10.10.10.22
@@ -29,31 +29,33 @@ DOMAIN=mo9.com
 
 ##############################  Basic tools install of kubernetes  ######################################
 #1.Check if directory exists .
-if [ ! -d $SSL_PATH ];then
+if [ ! -d $SSL_BIN_PATH ];then
      mkdir -p $SSL_PATH
      chmod 755 $SSL_PATH
-     mkdir -p $CA_PATH
-     chmod -R 755 $CA_PATH
+fi
+if [ ! -d $CA_DIR ];then
+     mkdir -p $CA_DIR
+     chmod -R 755 $CA_DIR
 fi
 
 #2.Install the cfssl tools
-rm -rf  $SSL_PATH/bin
-mkdir -p $SSL_PATH/bin  > /dev/null 2>&1
-wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -P $SSL_PATH/bin/  > /dev/null 2>&1
-wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -P $SSL_PATH/bin/  > /dev/null 2>&1
-wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64 -P $SSL_PATH/bin/  > /dev/null 2>&1
-cd  $SSL_PATH/bin/
+rm -rf  $SSL_BIN_PATH/bin
+mkdir -p $SSL_BIN_PATH/bin  > /dev/null 2>&1
+wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -P $SS_BINL_PATH/bin/  > /dev/null 2>&1
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -P $SSL_BIN__PATH/bin/  > /dev/null 2>&1
+wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64 -P $SSL_BIN_PATH/bin/  > /dev/null 2>&1
+cd  $SSL_BIN_PATH/bin/
 mv cfssl_linux-amd64 cfssl  && mv cfssljson_linux-amd64 cfssljson && mv cfssl-certinfo_linux-amd64 cfssl-certinfo
 chmod +x *
-ln -sf $SSL_PATH/bin/* /usr/local/sbin/
+ln -sf $SSL_BIN_PATH/bin/* /usr/local/bin/
 echo ".........................................................................."
 echo "INFO: Install successd of ca tool ..."
 
 
 ############################## Create kubernetes certificate file for root ca  ######################################
 # Create the root certificate config file
-rm -rf $CA_PATH/*
-cat >$CA_PATH/ca-config.json<<EOF
+rm -rf $CA_DIR/*
+cat >$CA_DIR/ca-config.json<<EOF
 {
   "signing": {
     "default": {
@@ -75,7 +77,7 @@ cat >$CA_PATH/ca-config.json<<EOF
 EOF
 
 # Create the root certificate signature request file
-cat >$CA_PATH/ca-csr.json<<EOF
+cat >$CA_DIR/ca-csr.json<<EOF
 {
   "CN": "kubernetes",
   "key": {
@@ -95,7 +97,7 @@ cat >$CA_PATH/ca-csr.json<<EOF
 EOF
 
 # create ca.pem and ca-key.pem
-cd $CA_PATH
+cd $CA_DIR
 cfssl gencert --initca=true ca-csr.json | cfssljson --bare ca
 echo ".........................................................................."
 echo "INFO: Create ca.pem adn ca-key.pem successd..."
@@ -103,7 +105,7 @@ echo "INFO: Create ca.pem adn ca-key.pem successd..."
 
 ############################## Create kubernetes certificate file ######################################
 # Create the kubernetes certificate signature request file
-cat >$CA_PATH/kubernetes-csr.json << EOF
+cat >$CA_DIR/kubernetes-csr.json << EOF
 {
     "CN": "kubernetes",
     "hosts": [
@@ -138,7 +140,7 @@ cat >$CA_PATH/kubernetes-csr.json << EOF
 EOF
 
 # Generate kubernetes.pem and kubernetes-key.pem
-cd $CA_PATH
+cd $CA_DIR
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kubernetes-csr.json | cfssljson -bare kubernetes
 echo ".........................................................................."
 echo "INFO: Create kuernetes.pem and kubernetes-key.pem successd..."
@@ -146,7 +148,7 @@ echo "INFO: Create kuernetes.pem and kubernetes-key.pem successd..."
 
 ############################## Create certificate file for  kube-controller-manager  ######################################
 # Create the  kube-controller-manager  certificate signature request file
-cat > $CA_PATH/kube-controller-manager-csr.json <<EOF
+cat > $CA_DIR/kube-controller-manager-csr.json <<EOF
 {
     "CN": "system:kube-controller-manager",
     "key": {
@@ -162,8 +164,8 @@ cat > $CA_PATH/kube-controller-manager-csr.json <<EOF
     "names": [
       {
         "C": "CN",
-        "ST": "BeiJing",
-        "L": "BeiJing",
+	"ST": "ShangHai",
+        "L": "ShangHai",
         "O": "system:kube-controller-manager",
         "OU": "System"
       }
@@ -172,7 +174,7 @@ cat > $CA_PATH/kube-controller-manager-csr.json <<EOF
 EOF
 
 # Generate  kube-controller-manager.pem and  kube-controller-manager-key.pem
-cd $CA_PATH
+cd $CA_DIR
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
 echo ".........................................................................."
 echo "INFO: Create kube-controller-manager.pem and  kube-controller-manager-key.pem successd..."
@@ -180,7 +182,7 @@ echo "INFO: Create kube-controller-manager.pem and  kube-controller-manager-key.
 
 ############################## Create certificate file for kube-scheduler  ######################################
 # Create the  kube-scheduler  certificate signature request file
-cat > $CA_PATH/kube-scheduler-csr.json <<EOF
+cat > $CA_DIR/kube-scheduler-csr.json <<EOF
 {
     "CN": "system:kube-scheduler",
     "hosts": [
@@ -206,7 +208,7 @@ cat > $CA_PATH/kube-scheduler-csr.json <<EOF
 EOF
 
 # Generate kube-scheduler.pem and kube-scheduler-key.pem
-cd $CA_PATH
+cd $CA_DIR
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes  kube-scheduler-csr.json | cfssljson -bare kube-scheduler
 echo ".........................................................................."
 echo "INFO: Create kube-scheduler.pem and kube-scheduler-key.pem successd..."
@@ -214,7 +216,7 @@ echo "INFO: Create kube-scheduler.pem and kube-scheduler-key.pem successd..."
 
 ############################## Create certificate file for kubectl ######################################
 # Create the admin certificate signature request file
-cat > $CA_PATH/admin-csr.json << EOF
+cat > $CA_DIR/admin-csr.json << EOF
 {
   "CN": "admin",
   "hosts": [],
@@ -235,7 +237,7 @@ cat > $CA_PATH/admin-csr.json << EOF
 EOF
 
 # Generate admin.pem and admin-key.pem
-cd $CA_PATH
+cd $CA_DIR
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes admin-csr.json | cfssljson -bare admin
 echo ".........................................................................."
 echo "INFO: Create admin.pem and admin-key.pem successd..."
@@ -243,7 +245,7 @@ echo "INFO: Create admin.pem and admin-key.pem successd..."
 
 ############################## Create certificate file for kube-proxy ######################################
 # Create the kube-proxy certificate signature request file
-cat > $CA_PATH/kube-proxy-csr.json << EOF
+cat > $CA_DIR/kube-proxy-csr.json << EOF
 {
   "CN": "system:kube-proxy",
   "hosts": [],
@@ -264,7 +266,7 @@ cat > $CA_PATH/kube-proxy-csr.json << EOF
 EOF
 
 # Generate kube-proxy.pem and kube-proxy-key.pem
-cd $CA_PATH
+cd $CA_DIR
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes kube-proxy-csr.json | cfssljson -bare kube-proxy
 echo ".........................................................................."
 echo "INFO: Create  kube-proxy.pem and kube-proxy-key.pem successd..."
@@ -272,7 +274,7 @@ echo "INFO: Create  kube-proxy.pem and kube-proxy-key.pem successd..."
 
 ############################## Create certificate file for etcd ######################################
 # Create the etcd certificate signature request file
-cat > $CA_PATH/etcd-csr.json << EOF
+cat > $CA_DIR/etcd-csr.json << EOF
 {
   "CN": "etcd",
   "hosts": [
@@ -298,12 +300,12 @@ cat > $CA_PATH/etcd-csr.json << EOF
 EOF
 
 # Generate etcd.pem and etcd-key.pem
-cd $CA_PATH
+cd $CA_DIR
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes etcd-csr.json | cfssljson -bare etcd
 echo ".........................................................................."
 echo "INFO: Create  etcd.pem and etcd-key.pem successd..."
 
 
 ############################## Remove sufix .json and .csr file ######################################
-cd $CA_PATH
+cd $CA_DIR
 rm -rf *csr* && rm -rf *json
