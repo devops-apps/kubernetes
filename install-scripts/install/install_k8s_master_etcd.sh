@@ -37,7 +37,6 @@ chmod -R 755 $ETCD_INSTALL_PATH
 
 ### 3.Install the kube-controller-manager service.
 cat >/usr/lib/systemd/system/etcd.service<<"EOF"
-cat  /usr/lib/systemd/system/etcd.service 
 [Unit]
 Description=Etcd Server
 After=network.target
