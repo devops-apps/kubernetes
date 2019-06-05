@@ -29,11 +29,11 @@ DOMAIN=mo9.com
 
 ##############################  Basic tools install of kubernetes  ######################################
 #1.Check if directory exists .
-if [ ! -d $SSL_BIN_PATH ];then
+if [ ! -d $SSL_BIN_PATH ]; then
      mkdir -p $SSL_PATH
      chmod 755 $SSL_PATH
 fi
-if [ ! -d $CA_DIR ];then
+if [ ! -d $CA_DIR ]; then
      mkdir -p $CA_DIR
      chmod -R 755 $CA_DIR
 fi
@@ -46,8 +46,7 @@ wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -P $SSL_BIN__PATH/bin/  > 
 wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64 -P $SSL_BIN_PATH/bin/  > /dev/null 2>&1
 cd  $SSL_BIN_PATH/bin/
 mv cfssl_linux-amd64 cfssl  && mv cfssljson_linux-amd64 cfssljson && mv cfssl-certinfo_linux-amd64 cfssl-certinfo
-chmod +x *
-ln -sf $SSL_BIN_PATH/bin/* /usr/local/bin/
+chmod +x * && ln -sf $SSL_BIN_PATH/bin/* /usr/local/bin/
 echo ".........................................................................."
 echo "INFO: Install successd of ca tool ..."
 

@@ -108,7 +108,6 @@ fi
 
 if  [ ! -d $CLUSTER_INSTALL_DIR ] 
       mkdir -p  $CLUSTER_INSTALL_DIR 
-      mkdir -P $CA_DIR
       if [ ! -d $CA_DIR ]; then
            mkdir -P $CA_DIR
       fi
