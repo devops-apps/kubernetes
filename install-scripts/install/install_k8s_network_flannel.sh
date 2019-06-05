@@ -61,17 +61,16 @@ WantedBy=multi-user.target
 RequiredBy=docker.service
 EOF
 
-### 3.Create network of flannel .
 
+### 3.Create network of flannel .
 etcdctl --endpoints=$FANNEL_ETCD_ENPOINTS \
   --ca-file=/etc/k8s/ssl/ca.pem \
-  --cert-file=/etc/k8s/ssl/ca-key.pem
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  mkdir /kube-centos/network
+  --cert-file=/etc/k8s/ssl/etcd.pem
+  --key-file=/etc/k8s/ssl/etcd-key.pem
+  mkdir $FLANNEL_ETCD_PREFIX
   
 etcdctl --endpoints=$FANNEL_ETCD_ENPOINTS \
-  --ca-file=/etc/kubernetes/ssl/ca.pem \
-  --cert-file=/etc/kubernetes/ssl/kubernetes.pem \
-  --key-file=/etc/kubernetes/ssl/kubernetes-key.pem \
-  mk /kube-centos/network/config '{"Network":"172.10.16,"SubnetLen":24,"Backend":{"Type":"vxlan"}}'
-  
+  --ca-file=/etc/k8s/ssl/ca.pem \
+  --cert-file=/etc/k8s/ssl/etcd.pem
+  --key-file=/etc/k8s/ssl/etcd-key.pem
+  mk $FLANNEL_ETCD_PREFIX/config '{"Network": 172.16.0.0/16,"SubnetLen":24,"Backend":{"Type":"vxlan"}}'
