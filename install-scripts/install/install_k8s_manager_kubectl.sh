@@ -14,11 +14,13 @@
 
 #################### Variable parameter setting ######################
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
-CONF_PATH=/etc/k8s/kubernetes
+CA_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
 VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/${VERSION}/kubernetes-server-linux-amd64.tar.gz
-BIN_NAME=kube-proxy
+BIN_NAME=kubectl
+KUBE_APISERVER=https://dev-kube-api.mo9.com
+
 
 ### 1.Check if the install directory exists.
 if [ ! -d $K8S_INSTALL_PATH ]; then
@@ -38,41 +40,19 @@ chown -R k8s:k8s $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
 
-### 3.Config the kube-proxy conf.
-mkdir -p >$CONF_PATH >>/dev/null
-cat >$CONF_PATH/kube-proxy.config.yaml<<"EOF"
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-bindAddress: 10.0.0.22
-clientConnection:
-  kubeconfig: /etc/k8s/kubernetes/kube-proxy.kubeconfig
-clusterCIDR: 10.10.0.0/16
-healthzBindAddress: 10.0.0.22:10256
-hostnameOverride: kube-node2
-kind: KubeProxyConfiguration
-metricsBindAddress: 10.0.0.22:10249
-mode: "ipvs"
-EOF
-
-
-### 4.Install the kube-proxy service.
-cat >/usr/lib/systemd/system/kube-proxy.service <<"EOF"
-[Unit]
-Description=Kubernetes Kube-Proxy Server
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
-After=network.target
-
-[Service]
-WorkingDirectory=/var/lib/kube-proxy
-ExecStart=/opt/k8s/bin/kube-proxy \
-  --config=/etc/k8s/kubernetes/kube-proxy.config.yaml \
-  --alsologtostderr=true \
-  --logtostderr=false \
-  --log-dir=/data/apps/k8s/kubernetes/logs/kube-proxy \
-  --v=2
-Restart=on-failure
-RestartSec=5
-LimitNOFILE=65536
-
-[Install]
-WantedBy=multi-user.target
-EOF
+### 3.create kube-config for kubectl
+kubectl config set-cluster kubernetes \
+  --certificate-authority=$CA_PATH/ca.pem \
+  --embed-certs=true \
+  --server=${KUBE_APISERVER}
+# set clinet auth parameters
+kubectl config set-credentials admin \
+  --client-certificate=$CA_PATH/admin.pem \
+  --embed-certs=true \
+  --client-key=/etc/kubernetes/ssl/admin-key.pem
+# set up  and down context of parameters
+kubectl config set-context kubernetes \
+  --cluster=kubernetes \
+  --user=admin
+# set up  and doen context of default parameters
+kubectl config use-context kubernetes
