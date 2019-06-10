@@ -19,7 +19,9 @@ USER=k8s
 CLUSTER_INSTALL_DIR=/data/apps/k8s
 CA_DIR=/etc/k8s/ssl
 
+#Notice: If you want execute the scripts use  ansible, Please use "#"  annotation  this statement 
 read -p "Do you want init for system ,please make sure the operation? please input [y/n]:" STATE
+
 
 #./start
 if [ "$STATE" = "y" ]; then
@@ -106,14 +108,14 @@ if [ $? -ne 0 ]; then
      useradd -g $USER -d /var/lib/k8s -c "Kubernetes Service" -m -s /sbin/nogin  $USER
 fi
 
-if  [ ! -d $CLUSTER_INSTALL_DIR ] 
+if  [ ! -d $CLUSTER_INSTALL_DIR ]; then
       mkdir -p  $CLUSTER_INSTALL_DIR 
       if [ ! -d $CA_DIR ]; then
-           mkdir -P $CA_DIR
+           mkdir -p $CA_DIR
       fi
 else
       if [ ! -d $CA_DIR ]; then
-           mkdir -P $CA_DIR
+           mkdir -p $CA_DIR
       fi
 fi
 
