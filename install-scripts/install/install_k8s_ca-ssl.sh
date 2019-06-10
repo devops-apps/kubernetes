@@ -305,6 +305,50 @@ echo "..........................................................................
 echo "INFO: Create  etcd.pem and etcd-key.pem successd..."
 
 
+############################## Create certificate file for network ######################################
+# Create the network certificate signature request file
+cat > $CA_DIR/flannel-csr.json << EOF
+{
+  "CN": "flanneld",
+  "hosts": [],
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "CN",
+      "ST": "ShangHai",
+      "L": "ShangHai",
+      "O": "k8s",
+      "OU": "4Paradigm"
+    }
+  ]
+}
+EOF
+
+# Generate flannel.pem and flannel-key.pem
+cd $CA_DIR
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kubernetes flannel-csr.json | cfssljson -bare flannel
+echo ".........................................................................."
+echo "INFO: Create  flannel.pem and flannel-key.pem successd..."
+
+
 ############################## Remove sufix .json and .csr file ######################################
 cd $CA_DIR
 rm -rf *csr* && rm -rf *json
+
+
+############################## sync ca files for kubernetes ######################################
+#master
+ansible master_k8s_vgs -m  synchronize -a "src=/etc/k8s/ssl/  dest=/etc/k8s/ssl/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
+ansible master_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/{kube-proxy*,kubelet*,admin*}" -b
+
+#worker
+ansible worker_k8s_vgs -m  synchronize -a "src=/etc/k8s/ssl/  dest=/etc/k8s/ssl/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
+ansible master_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/{kube-controller-manager*,kubernetes*,kube-scheduler*,etcd*,admin*}" -b
+
+
+
+
+
