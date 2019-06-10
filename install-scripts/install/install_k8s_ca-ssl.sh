@@ -27,6 +27,8 @@ CLUSTER_KUBERNETES_SVC_IP=10.254.0.1
 DOMAIN=mo9.com
 
 
+[ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
+
 ##############################  Basic tools install of kubernetes  ######################################
 #1.Check if directory exists .
 if [ ! -d $SSL_BIN_PATH ]; then
@@ -39,16 +41,19 @@ if [ ! -d $CA_DIR ]; then
 fi
 
 #2.Install the cfssl tools
-rm -rf  $SSL_BIN_PATH/bin
-mkdir -p $SSL_BIN_PATH/bin  > /dev/null 2>&1
-wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -P $SS_BINL_PATH/bin/  > /dev/null 2>&1
-wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -P $SSL_BIN__PATH/bin/  > /dev/null 2>&1
-wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64 -P $SSL_BIN_PATH/bin/  > /dev/null 2>&1
-cd  $SSL_BIN_PATH/bin/
-mv cfssl_linux-amd64 cfssl  && mv cfssljson_linux-amd64 cfssljson && mv cfssl-certinfo_linux-amd64 cfssl-certinfo
-chmod +x * && ln -sf $SSL_BIN_PATH/bin/* /usr/local/bin/
-echo ".........................................................................."
-echo "INFO: Install successd of ca tool ..."
+which cfssl
+if [ $? != 0 ]; then
+     rm -rf  $SSL_BIN_PATH/bin
+     mkdir -p $SSL_BIN_PATH/bin  > /dev/null 2>&1
+     wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -P $SS_BINL_PATH/bin/  > /dev/null 2>&1
+     wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -P $SSL_BIN__PATH/bin/  > /dev/null 2>&1
+     wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64 -P $SSL_BIN_PATH/bin/  > /dev/null 2>&1
+     cd  $SSL_BIN_PATH/bin/
+     mv cfssl_linux-amd64 cfssl  && mv cfssljson_linux-amd64 cfssljson && mv cfssl-certinfo_linux-amd64 cfssl-certinfo
+     chmod +x * && ln -sf $SSL_BIN_PATH/bin/* /usr/local/bin/
+     echo ".........................................................................."
+     echo "INFO: Install successd of ca tool ..."
+fi
 
 
 ############################## Create kubernetes certificate file for root ca  ######################################
@@ -341,14 +346,14 @@ rm -rf *csr* && rm -rf *json
 
 ############################## sync ca files for kubernetes ######################################
 #master
+ansible master_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
 ansible master_k8s_vgs -m  synchronize -a "src=/etc/k8s/ssl/  dest=/etc/k8s/ssl/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
-ansible master_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/{kube-proxy*,kubelet*,admin*}" -b
+ansible master_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/{kube-proxy*,admin*}" -b
 
 #worker
+ansible worker_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
 ansible worker_k8s_vgs -m  synchronize -a "src=/etc/k8s/ssl/  dest=/etc/k8s/ssl/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
 ansible master_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/{kube-controller-manager*,kubernetes*,kube-scheduler*,etcd*,admin*}" -b
-
-
 
 
 
