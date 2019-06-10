@@ -326,7 +326,7 @@ cat > $CA_DIR/flannel-csr.json << EOF
       "ST": "ShangHai",
       "L": "ShangHai",
       "O": "k8s",
-      "OU": "4Paradigm"
+      "OU": "System"
     }
   ]
 }
