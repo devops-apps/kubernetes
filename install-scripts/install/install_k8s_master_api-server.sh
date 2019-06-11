@@ -16,19 +16,19 @@
 
 #################### Variable parameter setting ######################
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
-CONF_PATH=/etc/k8s/kubernetes
+K8S_CONF_PATH=/etc/k8s/kubernetes
+CA_DIR=/etc/k8s/ssl
 SOFTWARE=/root/software
 VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
 ETC_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
-BIN_NAME=kube-apiserver
+KUBE_NAME=kube-apiserver
 USER=k8s
-CLUSTER_RANG_SUBNET=10.254.0.0/16
+CLUSTER_RANG_SUBNET=10.254.0.0/22
 SERVER_PORT_RANG=8400-9000
-CA_DIR=/etc/k8s/ssl
-K8S_CONF_PATH=/etc/k8s/kubernetes
+
 
 
 ### 1.Check if the install directory exists.
@@ -39,8 +39,8 @@ if [ ! -d $K8S_INSTALL_PATH ]; then
      fi
      if [ ! -d $K8S_INSTALL_PATH/logs ]; then
           mkdir -p $K8S_INSTALL_PATH/logs
-          if [ ! -d $K8S_INSTALL_PATH/logs/${BIN_NSME} ]; then
-               mkdir -p $K8S_INSTALL_PATH/logs/${BIN_NAME}
+          if [ ! -d "$K8S_INSTALL_PATH/logs/$KUBE_NAME" ]; then
+               mkdir -p $K8S_INSTALL_PATH/logs/$KUBE_NAME
           fi
      fi
 fi
@@ -54,7 +54,7 @@ if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
 fi
 cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
-cp -fp kubernetes/server/bin/$BIN_NAME $K8S_INSTALL_PATH/bin
+cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_INSTALL_PATH/bin
 ln -sf  $K8S_INSTALL_PATH/bin/* /usr/local/bin
 chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
@@ -69,8 +69,8 @@ After=network.target
 [Service]
 User=${USER}
 Type=notify
-EnvironmentFile=-${K8S_CONF_PATH}/kube-apiserver
-ExecStart=${K8S_INSTALL_PATH}/bin/kube-apiserver \\
+EnvironmentFile=-${K8S_CONF_PATH}/${KUBE_NAME}
+ExecStart=${K8S_INSTALL_PATH}/bin/${KUBE_NAME} \\
   --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
   --bind-address=0.0.0.0 \\
   --insecure-bind-address=${LISTEN_IP} \\
