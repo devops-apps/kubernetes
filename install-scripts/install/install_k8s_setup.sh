@@ -105,7 +105,7 @@ echo "INFO: Set successd of system ..."
 egrep "^$USER" /etc/passwd > /dev/null
 if [ $? -ne 0 ]; then
      groupadd $USER
-     useradd -g $USER -d /var/lib/k8s -c "Kubernetes Service" -m -s /sbin/nogin  $USER
+     useradd -g $USER -d /var/lib/k8s -c "Kubernetes Service" -m -s /sbin/nologin  $USER
 fi
 
 if  [ ! -d $CLUSTER_INSTALL_DIR ]; then
