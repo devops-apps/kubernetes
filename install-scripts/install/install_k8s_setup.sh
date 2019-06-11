@@ -19,7 +19,7 @@ USER=k8s
 CLUSTER_INSTALL_DIR=/data/apps/k8s
 CA_DIR=/etc/k8s/ssl
 
-#Notice: If you want execute the scripts use  ansible, Please use "#"  annotation  this statement 
+# Notice: If you want execute the scripts use  ansible, Please use "#"  annotation  this statement 
 read -p "Do you want init for system ,please make sure the operation? please input [y/n]:" STATE
 
 

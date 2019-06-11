@@ -19,24 +19,23 @@ VERSION=v3.3.13
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/etcd/etcd-${VERSION}-linux-amd64.tar.gz
 CA_PATH=/etc/k8s/ssl
 ETCD_ENPOIDTS="etcd01=https://10.10.10.22:2380,etcd02=https://10.10.10.23:2380,etcd03=https://10.10.10.24:2380"
-LISTEN_IP=$(ifconfig | grep -A 1 eth1 |grep inet |awk '{print $2}')
+ETH_INTERFACE=eth1
+LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
 USER=k8s
 
 ### 1.Check if the install directory exists.
 if [ ! -d $ETCD_INSTALL_PATH ]; then
      mkdir $ETCD_INSTALL_PATH
      chmod 0755 $ETCD_INSTALL_PATH
-
 fi
 
 ### 2.Install etcd binary of kubernetes.
-mkdir -p $ETCD_INSTALL_PATH/bin >>/dev/null
 if [ ! -f "$SOFTWARE/etcd-${VERSION}-linux-amd64.tar.gz" ]; then
-     wget $DOWNLOAD_URL -P $SOFTWARE
+     wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
      chmod -R 755 $ETCD_INSTALL_PATH
 fi
 
-mkdir -p $ETCD_INSTALL_PATH/{bin,data} >>/dev/null 2>&1
+mkdir -p $ETCD_INSTALL_PATH/{bin,data} >>/tmp/install.log 2>&1
 cd $SOFTWARE && tar -xzf etcd-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp etcd-${VERSION}-linux-amd64/etcd* $ETCD_INSTALL_PATH/bin
 ln -sf  $ETCD_INSTALL_PATH/bin/* /usr/local/bin
@@ -68,7 +67,7 @@ ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) /usr/local/bin/etcd  \\
                         --listen-peer-urls=https://${LISTEN_IP}:2380 \\
                         --initial-advertise-peer-urls=https://${LISTEN_IP}:2380 \\
                         --listen-client-urls=https://${LINSTEN_IP}:2379,https://127.0.0.1:2379 \\
-                        --advertise-client-urls=https://10.10.10.22:2379 \\
+                        --advertise-client-urls=https://${LINSTEN_IP}:2379 \\
                         --initial-cluster-token=etcd-cluster-0 \\
                         --initial-cluster=${ETCD_ENPOIDTS} \\
                         --initial-cluster-state=new \\
