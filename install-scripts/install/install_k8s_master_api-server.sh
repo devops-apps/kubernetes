@@ -28,6 +28,7 @@ USER=k8s
 CLUSTER_RANG_SUBNET=10.254.0.0/16
 SERVER_PORT_RANG=8400-9000
 CA_DIR=/etc/k8s/ssl
+K8S_CONF_PATH=/etc/k8s/kubernetes
 
 
 ### 1.Check if the install directory exists.
@@ -37,8 +38,12 @@ if [ ! -d $K8S_INSTALL_PATH ]; then
 	 mkdir -p $K8S_INSTALL_PATH/logs/apiserver
 fi
 
+if [ ! -d $K8S_CONF_PATH ]; then
+     mkdir -p $K8S_CONF_PATH
+fi
+
 ### 2.Install kube-apiserver binary of kubernetes.
-if [ ! -f "$SOFTWARE/kubernetes-server-linux-amd64.tar.gz" ]; then
+if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
 fi
 cd $SOFTWARE && tar -xzf kubernetes-server-linux-amd64.tar.gz -C ./
@@ -56,7 +61,7 @@ After=network.target
 [Service]
 User=k8s
 Type=notify
-EnvironmentFile=-/etc/k8s/kubernetes/kube-apiserver
+EnvironmentFile=-${K8S_CONF_PATH}/kube-apiserver
 ExecStart=${K8S_INSTALL_PATH}/bin/kube-apiserver \\
   --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
   --bind-address=0.0.0.0 \\
@@ -67,9 +72,9 @@ ExecStart=${K8S_INSTALL_PATH}/bin/kube-apiserver \\
   --authorization-mode=Node,RBAC \\
   --anonymous-auth=false \\
   --runtime-config=api/all \\
-  --audit-policy-file=/etc/k8s/kubernetes/audit-policy.yaml \\
+  --audit-policy-file=${K8S_CONF_PATH}/audit-policy.yaml \\
   --enable-bootstrap-token-auth=true \\
-  --token-auth-file=/etc/k8s/ssl/token.csv \\
+  --token-auth-file=${K8S_CONF_PATH}/token.csv \\
   --service-cluster-ip-range=${CLUSTER_RANG_SUBNET \\
   --service-node-port-range=${SERVER_PORT_RANG} \\
   --tls-cert-file=${CA_DIR}/kubernetes.pem \\

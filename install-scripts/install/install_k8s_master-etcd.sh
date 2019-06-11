@@ -8,7 +8,7 @@
 # Date:  2016-08-17
 # Email: bighank@163.com
 # QQ:    2658757934
-# blog:  http://home.51cto.com/space?uid=6170059
+# blog:  https://blog.51cto.com/blief
 ######################################################################
 
 
@@ -26,6 +26,7 @@ USER=k8s
 ### 1.Check if the install directory exists.
 if [ ! -d $ETCD_INSTALL_PATH ]; then
      mkdir $ETCD_INSTALL_PATH
+	 mkdir -p $ETCD_INSTALL_PATH/{bin,data}
      chmod 0755 $ETCD_INSTALL_PATH
 fi
 
@@ -35,7 +36,6 @@ if [ ! -f "$SOFTWARE/etcd-${VERSION}-linux-amd64.tar.gz" ]; then
      chmod -R 755 $ETCD_INSTALL_PATH
 fi
 
-mkdir -p $ETCD_INSTALL_PATH/{bin,data} >>/tmp/install.log 2>&1
 cd $SOFTWARE && tar -xzf etcd-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp etcd-${VERSION}-linux-amd64/etcd* $ETCD_INSTALL_PATH/bin
 ln -sf  $ETCD_INSTALL_PATH/bin/* /usr/local/bin

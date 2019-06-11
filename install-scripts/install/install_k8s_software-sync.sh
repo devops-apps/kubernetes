@@ -8,7 +8,7 @@
 # Date:  2016-08-17
 # Email: bighank@163.com
 # QQ:    2658757934
-# blog:  http://home.51cto.com/space?uid=6170059
+# blog:  https://blog.51cto.com/blief
 ######################################################################
 
 
@@ -53,18 +53,18 @@ worker-k8s-n02     ansible_host=${W2_K8S_IP}
 worker-k8s-n03     ansible_host=${W3_K8S_IP}
 
 [slb_lvs_vgs]
-ha-lvs-n01     ansible_host=${H1_LVS_IP}
-ha-lvs-n02     ansible_host=${H2_LVS_IP}
+slb-lvs-n01     ansible_host=${H1_LVS_IP}
+slb-lvs-n02     ansible_host=${H2_LVS_IP}
 EOF
 
 ### 3.sync packages to each server of  kubernetes
 #kubernetes packages
-ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}" -b
-ansible worker-k8s-vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}" -b
+ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}" -b
+ansible worker_k8s_vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}" -b
 
 #etcd package
-ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$ETCD_PACKAGE_NAME dest=${SOFTWARE}" -b
+ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$ETCD_PACKAGE_NAME dest=${SOFTWARE}" -b
 
 #flannel package
-ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}" -b
-ansible worker-k8s-vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}" -b
+ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}" -b
+ansible worker_k8s_vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}" -b
