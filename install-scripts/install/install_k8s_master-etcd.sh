@@ -20,7 +20,7 @@ DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/etcd/etcd-${VERS
 CA_PATH=/etc/k8s/ssl
 ETCD_ENPOIDTS="etcd01=https://10.10.10.22:2380,etcd02=https://10.10.10.23:2380,etcd03=https://10.10.10.24:2380"
 LISTEN_IP=$(ifconfig | grep -A 1 eth1 |grep inet |awk '{print $2}')
-USER=K8s
+USER=k8s
 
 ### 1.Check if the install directory exists.
 if [ ! -d $ETCD_INSTALL_PATH ]; then
@@ -29,14 +29,14 @@ if [ ! -d $ETCD_INSTALL_PATH ]; then
 
 fi
 
-### 2.Install kube-controller-manager binary of kubernetes.
+### 2.Install etcd binary of kubernetes.
 mkdir -p $ETCD_INSTALL_PATH/bin >>/dev/null
 if [ ! -f "$SOFTWARE/etcd-${VERSION}-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE
      chmod -R 755 $ETCD_INSTALL_PATH
 fi
 
-mkdir -p $ETCD_INSTALL_PATH/bin >>/dev/null 2>&1
+mkdir -p $ETCD_INSTALL_PATH/{bin,data} >>/dev/null 2>&1
 cd $SOFTWARE && tar -xzf etcd-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp etcd-${VERSION}-linux-amd64/etcd* $ETCD_INSTALL_PATH/bin
 ln -sf  $ETCD_INSTALL_PATH/bin/* /usr/local/bin

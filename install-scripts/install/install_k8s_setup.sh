@@ -48,6 +48,9 @@ sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/selinux/config  >>/dev/nu
 echo ".........................................................................."
 echo "INFO: Initialization successd of system ..."
 
+#Add sudo permissions to devops in /etc/sudoers file .
+sudo sed -i  "/secure_path/s:\:/usr/local.*::" /etc/sudoers
+sudo sed -i  "/secure_path/s:\:/usr/bin:\:/usr/bin\:/usr/local/bin\:/usr/local/sbin:" /etc/sudoers
 
 ########## Optimization kernel of system ##########
 # Load the Linux kernel module.
@@ -86,8 +89,8 @@ EOF
 sysctl -p /etc/sysctl.d/kubernetes.conf  >>/dev/null 2>&1
 
 # Disable numa for system.
-cp /etc/default/grub{,.bak}
-sudo sed -i "s:centos/swap:& numa=off:" /etc/sysconfig/grub
+sudo sed -i "s:numa=off::" /etc/sysconfig/grub
+sudo sed -i "s:centos/swap rhgb:& numa=off:" /etc/sysconfig/grub
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg >>/dev/null 2>&1
 
 # Setting system time zone.
