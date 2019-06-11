@@ -8,7 +8,7 @@
 # Date:  2016-08-17
 # Email: bighank@163.com
 # QQ:    2658757934
-# blog:  http://home.51cto.com/space?uid=6170059
+# blog:  https://blog.51cto.com/blief
 ######################################################################
 
 
@@ -53,7 +53,7 @@ fi
 if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
 fi
-cd $SOFTWARE && tar -xzf kubernetes-server-linux-amd64.tar.gz -C ./
+cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp kubernetes/server/bin/$BIN_NAME $K8S_INSTALL_PATH/bin
 ln -sf  $K8S_INSTALL_PATH/bin/* /usr/local/bin
 chown -R $USER:$USER $K8S_INSTALL_PATH
