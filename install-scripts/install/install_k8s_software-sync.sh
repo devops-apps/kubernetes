@@ -12,6 +12,8 @@
 ######################################################################
 
 
+[ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
+
 #################### Variable parameter setting ######################
 SOFTWARE=/root/software
 K8S_PACKAGES_NAME=kubernetes-server-v1.14.2-linux-amd64.tar.gz
@@ -39,30 +41,30 @@ wget $FLANNEL_DOWNLOAD_URL -P $SOFTWARE
 	 
 ### 2.Install ansible package with yum way on devops server and create hosts files for ansible
 yum install ansible  -y  >/dev/null 
-cat >/etc/ansible/hosts <<"EOF"
-[master-k8s-vgs]
+cat >/etc/ansible/hosts <<EOF
+[master_k8s_vgs]
 master-k8s-n01     ansible_host=${M1_K8S_IP}
 master-k8s-n02     ansible_host=${M2_K8S_IP}
 master-k8s-n03     ansible_host=${M3_K8S_IP}
 
-[worker-k8s-vgs]
+[worker_k8s_vgs]
 worker-k8s-n01     ansible_host=${W1_K8S_IP}
 worker-k8s-n02     ansible_host=${W2_K8S_IP}
 worker-k8s-n03     ansible_host=${W3_K8S_IP}
 
-[ha-lvs-vgs]
+[slb_lvs_vgs]
 ha-lvs-n01     ansible_host=${H1_LVS_IP}
 ha-lvs-n02     ansible_host=${H2_LVS_IP}
 EOF
 
 ### 3.sync packages to each server of  kubernetes
 #kubernetes packages
-ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}"
-ansible worker-k8s-vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}"
+ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}" -b
+ansible worker-k8s-vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}" -b
 
 #etcd package
-ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$ETCD_PACKAGE_NAME dest=${SOFTWARE}"
+ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$ETCD_PACKAGE_NAME dest=${SOFTWARE}" -b
 
 #flannel package
-ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}"
-ansible worker-k8s-vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}"
+ansible master-k8s-vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}" -b
+ansible worker-k8s-vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}" -b
