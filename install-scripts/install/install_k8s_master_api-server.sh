@@ -27,25 +27,27 @@ LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
 KUBE_NAME=kube-apiserver
 USER=k8s
 CLUSTER_RANG_SUBNET=10.254.0.0/22
-SERVER_PORT_RANG=8400-9000
-
+SERVER_PORT_RANG=8400-9400
 
 
 ### 1.Check if the install directory exists.
-if [ ! -d $K8S_INSTALL_PATH ]; then
+if [ ! -d "$K8S_INSTALL_PATH" ]; then
      mkdir -p $K8S_INSTALL_PATH
-     if [ ! -d $K8S_INSTALL_PATH/bin ]; then
-          mkdir -p $K8S_INSTALL_PATH/bin 
-     fi
-     if [ ! -d $K8S_INSTALL_PATH/logs ]; then
-          mkdir -p $K8S_INSTALL_PATH/logs
-          if [ ! -d "$K8S_INSTALL_PATH/logs/$KUBE_NAME" ]; then
-               mkdir -p $K8S_INSTALL_PATH/logs/$KUBE_NAME
-          fi
+else
+     if [ ! -d "$K8S_INSTALL_PATH/bin" ]; then
+          mkdir -p $K8S_INSTALL_PATH/bin
      fi
 fi
 
-if [ ! -d $K8S_CONF_PATH ]; then
+if [ ! -d "$K8S_INSTALL_PATH/logs" ]; then
+     mkdir -p $K8S_INSTALL_PATH/logs
+else
+     if [ ! -d "$K8S_INSTALL_PATH/logs/$KUBE_NAME" ]; then
+          mkdir -p $K8S_INSTALL_PATH/logs/$KUBE_NAME
+     fi
+fi
+
+if [ ! -d "$K8S_CONF_PATH" ]; then
      mkdir -p $K8S_CONF_PATH
 fi
 
@@ -60,7 +62,7 @@ chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.Install the kube-apiserver service.
-cat >/usr/lib/systemd/system/kube-apiserver.service<<EOF
+cat >/usr/lib/systemd/system/${KUBE_NAME}.service<<EOF
 [Unit]
 Description=Kubernetes API Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
