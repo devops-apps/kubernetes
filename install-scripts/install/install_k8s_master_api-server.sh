@@ -34,8 +34,8 @@ K8S_CONF_PATH=/etc/k8s/kubernetes
 ### 1.Check if the install directory exists.
 if [ ! -d $K8S_INSTALL_PATH ]; then
      mkdir -p $K8S_INSTALL_PATH
-	 mkdir -p $K8S_INSTALL_PATH/{bin,logs}
-	 mkdir -p $K8S_INSTALL_PATH/logs/apiserver
+     mkdir -p $K8S_INSTALL_PATH/{bin,logs}
+     mkdir -p $K8S_INSTALL_PATH/logs/apiserver
 fi
 
 if [ ! -d $K8S_CONF_PATH ]; then
