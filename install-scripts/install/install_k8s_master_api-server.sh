@@ -34,8 +34,15 @@ K8S_CONF_PATH=/etc/k8s/kubernetes
 ### 1.Check if the install directory exists.
 if [ ! -d $K8S_INSTALL_PATH ]; then
      mkdir -p $K8S_INSTALL_PATH
-     mkdir -p $K8S_INSTALL_PATH/{bin,logs}
-     mkdir -p $K8S_INSTALL_PATH/logs/apiserver
+     if [ ! -d $K8S_INSTALL_PATH/bin ]; then
+          mkdir -p $K8S_INSTALL_PATH/bin 
+     fi
+     if [ ! -d $K8S_INSTALL_PATH/logs ]; then
+          mkdir -p $K8S_INSTALL_PATH/logs
+          if [ ! -d $K8S_INSTALL_PATH/logs/${BIN_NSME} ]; then
+               mkdir -p $K8S_INSTALL_PATH/logs/${BIN_NAME}
+          fi
+     fi
 fi
 
 if [ ! -d $K8S_CONF_PATH ]; then
@@ -58,12 +65,13 @@ cat >/usr/lib/systemd/system/kube-apiserver.service<<EOF
 Description=Kubernetes API Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
+
 [Service]
-User=k8s
+User=${USER}
 Type=notify
 EnvironmentFile=-${K8S_CONF_PATH}/kube-apiserver
 ExecStart=${K8S_INSTALL_PATH}/bin/kube-apiserver \\
-  --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
+  --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
   --bind-address=0.0.0.0 \\
   --insecure-bind-address=${LISTEN_IP} \\
   --insecure-port=8080 \\
@@ -75,7 +83,7 @@ ExecStart=${K8S_INSTALL_PATH}/bin/kube-apiserver \\
   --audit-policy-file=${K8S_CONF_PATH}/audit-policy.yaml \\
   --enable-bootstrap-token-auth=true \\
   --token-auth-file=${K8S_CONF_PATH}/token.csv \\
-  --service-cluster-ip-range=${CLUSTER_RANG_SUBNET \\
+  --service-cluster-ip-range=${CLUSTER_RANG_SUBNET} \\
   --service-node-port-range=${SERVER_PORT_RANG} \\
   --tls-cert-file=${CA_DIR}/kubernetes.pem \\
   --tls-private-key-file=${CA_DIR}/kubernetes-key.pem \\
@@ -84,7 +92,7 @@ ExecStart=${K8S_INSTALL_PATH}/bin/kube-apiserver \\
   --etcd-cafile=${CA_DIR}/ca.pem \\
   --etcd-certfile=${CA_DIR}/etcd.pem \\
   --etcd-keyfile=${CA_DIR}/etcd-key.pem \\
-  --etcd-servers=${ETC_ENDPOIDS} \\
+  --etcd-servers=${ETCD_ENDPOIDS} \\
   --enable-swagger-ui=true \\
   --allow-privileged=true \\
   --apiserver-count=3 \\
@@ -98,6 +106,7 @@ ExecStart=${K8S_INSTALL_PATH}/bin/kube-apiserver \\
   --logtostderr=false \\
   --log-dir=${K8S_INSTALL_PATH}/logs/apiserver \\
   --v=2
+
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536
