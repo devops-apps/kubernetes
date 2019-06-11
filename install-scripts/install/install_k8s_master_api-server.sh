@@ -101,12 +101,12 @@ ExecStart=${K8S_INSTALL_PATH}/bin/${KUBE_NAME} \\
   --audit-log-maxage=30 \\
   --audit-log-maxbackup=3 \\
   --audit-log-maxsize=100 \\
-  --audit-log-path=${K8S_INSTALL_PATH}/logs/apiserver/audit.log \\
+  --audit-log-path=${K8S_INSTALL_PATH}/logs/${KUBE_NAME}/audit.log \\
   --storage-backend=etcd3 \\
   --event-ttl=168h \\
   --alsologtostderr=true \\
   --logtostderr=false \\
-  --log-dir=${K8S_INSTALL_PATH}/logs/apiserver \\
+  --log-dir=${K8S_INSTALL_PATH}/logs/${KUBE_NAME} \\
   --v=2
 
 Restart=on-failure
