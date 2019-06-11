@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Descripts: This is a install script about the k8s cluster !
-# Copyright (C) 2001-2018 Redis SIA
+# Copyright (C) 2001-2018  SIA
 #
 # INFO:
 # touch: It is by Kevin li
