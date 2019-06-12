@@ -30,9 +30,9 @@ USER=k8s
 ### 1.Check if the install directory exists.
 if [ ! -d $ETCD_INSTALL_PATH ]; then
      mkdir $ETCD_INSTALL_PATH
-	 mkdir -p $ETCD_BIN_DIR
-	 mkdir -p $ETCD_DATA_DIR
-	 mkdir -P $ETCD_WAL_DIR
+     mkdir -p $ETCD_BIN_DIR
+     mkdir -p $ETCD_DATA_DIR
+     mkdir -P $ETCD_WAL_DIR
      chmod 0755 $ETCD_INSTALL_PATH
 fi
 
