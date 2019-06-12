@@ -347,12 +347,12 @@ rm -rf *csr* && rm -rf *json
 ############################## sync ca files for kubernetes ######################################
 #master
 sudo ansible master_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
-sudo ansible master_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
+sudo ansible master_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ owner=k8s group=k8s mode=push delete=yes rsync_opts=-avz" -b
 sudo ansible master_k8s_vgs -m shell -a "rm -rf ${CA_DIR}/admin*" -b
 
 #worker
 sudo ansible worker_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
-sudo ansible worker_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
+sudo ansible worker_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ owner=k8s group=k8s mode=push delete=yes rsync_opts=-avz" -b
 sudo ansible worker_k8s_vgs -m shell -a "rm -rf ${CA_DIR}/{kube-controller-manager*,kubernetes*,kube-scheduler*,etcd*,admin*}" -b
 
 

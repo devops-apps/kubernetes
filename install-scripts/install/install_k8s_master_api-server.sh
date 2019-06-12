@@ -239,7 +239,7 @@ rules:
       - group: scheduling.k8s.io
       - group: settings.k8s.io
       - group: storage.k8s.io
-      
+
   # Default level for all other requests.
   - level: Metadata
     omitStages:

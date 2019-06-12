@@ -55,6 +55,7 @@ After=network.target
 After=network-online.target
 Wants=network-online.target
 [Service]
+
 Type=notify
 WorkingDirectory=${ETCD_DATA_DIR}
 User=${USER}
@@ -73,8 +74,8 @@ ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) ${ETCD_BIN_DIR}/etcd  \\
                         --client-cert-auth=true \\
                         --listen-peer-urls=https://${LISTEN_IP}:2380 \\
                         --initial-advertise-peer-urls=https://${LISTEN_IP}:2380 \\
-                        --listen-client-urls=https://${LINSTEN_IP}:2379,https://127.0.0.1:2379 \\
-                        --advertise-client-urls=https://${LINSTEN_IP}:2379 \\
+                        --listen-client-urls=https://${LISTEN_IP}:2379,https://127.0.0.1:2379 \\
+                        --advertise-client-urls=https://${LISTEN_IP}:2379 \\
                         --initial-cluster-token=etcd-cluster-0 \\
                         --initial-cluster=${ETCD_ENPOIDTS} \\
                         --initial-cluster-state=new \\
@@ -84,9 +85,9 @@ ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) ${ETCD_BIN_DIR}/etcd  \\
                         --max-request-bytes=33554432 \\
                         --quota-backend-bytes=6442450944 \\
                         --heartbeat-interval=250 \\
-                        --election-timeout=2000
+                        --election-timeout=2000 \\
                         --peer-auto-tls=true"
-						
+
 Restart=on-failure
 LimitNOFILE=65536
 
