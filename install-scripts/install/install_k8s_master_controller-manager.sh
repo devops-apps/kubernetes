@@ -13,29 +13,17 @@
 
 
 #################### Variable parameter setting ######################
-K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
-CONF_PATH=/etc/k8s/kubernetes
-SOFTWARE=/root/software
-VERSION=v1.14.2
-DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/${VERSION}/kubernetes-server-linux-amd64.tar.gz
-
-
 KUBE_NAME=kube-controller-manager
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
-K8S_BIN_PATH=${K8S_INSTALL_PATH}/bin
+K8S_BIN_PATH=${K8S_INSTALL_PATH}/sbin
 K8S_LOG_DIR=${K8S_INSTALL_PATH}/logs
 K8S_CONF_PATH=/etc/k8s/kubernetes
 CA_DIR=/etc/k8s/ssl
 SOFTWARE=/root/software
 VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
-ETC_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379
-ETH_INTERFACE=eth1
-LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
 USER=k8s
 CLUSTER_RANG_SUBNET=10.254.0.0/22
-SERVER_PORT_RANG=8400-9400
-
 
 
 ### 1.Check if the install directory exists.

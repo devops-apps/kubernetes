@@ -17,14 +17,14 @@
 #################### Variable parameter setting ######################
 KUBE_NAME=kube-apiserver
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
-K8S_BIN_PATH=${K8S_INSTALL_PATH}/bin
+K8S_BIN_PATH=${K8S_INSTALL_PATH}/sbin
 K8S_LOG_DIR=${K8S_INSTALL_PATH}/logs
 K8S_CONF_PATH=/etc/k8s/kubernetes
 CA_DIR=/etc/k8s/ssl
 SOFTWARE=/root/software
 VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
-ETC_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379
+ETCD_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
 USER=k8s
@@ -77,7 +77,6 @@ User=${USER}
 Type=notify
 EnvironmentFile=-${K8S_CONF_PATH}/${KUBE_NAME}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
-ExecStart=${K8S_INSTALL_PATH}/bin/${KUBE_NAME} \\
   --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
   --bind-address=0.0.0.0 \\
   --insecure-bind-address=${LISTEN_IP} \\
@@ -107,13 +106,13 @@ ExecStart=${K8S_INSTALL_PATH}/bin/${KUBE_NAME} \\
   --audit-log-maxbackup=3 \\
   --audit-log-maxsize=100 \\
   --audit-log-path=${K8S_LOG_DIR}/${KUBE_NAME}/audit.log \\
-  --audit-log-path=${K8S_INSTALL_PATH}/logs/${KUBE_NAME}/audit.log \\
   --storage-backend=etcd3 \\
   --event-ttl=168h \\
   --alsologtostderr=true \\
   --logtostderr=false \\
   --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
   --v=2
+
 
 Restart=on-failure
 RestartSec=5
