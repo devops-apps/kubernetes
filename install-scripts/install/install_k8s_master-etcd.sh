@@ -17,10 +17,11 @@ ETCD_INSTALL_PATH="/data/apps/k8s/etcd"
 ETCD_BIN_DIR="${ETCD_INSTALL_PATH}/bin"
 ETCD_DATA_DIR="${ETCD_INSTALL_PATH}/data"
 ETCD_WAL_DIR="${ETCD_INSTALL_PATH}/wal"
-ETCD_ENPOIDTS="etcd01=https://10.10.10.22:2380,etcd02=https://10.10.10.23:2380,etcd03=https://10.10.10.24:2380"
+ETCD_ENPOIDTS="master-k8s-n01=https://10.10.10.22:2380,master-k8s-n02=https://10.10.10.23:2380,master-k8s-n03=https://10.10.10.24:2380"
 CA_PATH="/etc/k8s/ssl"
 SOFTWARE="/root/software"
 VERSION=v3.3.13
+HOSTNAME=`hostname`
 DOWNLOAD_URL="https://github.com/devops-apps/download/raw/master/etcd/etcd-${VERSION}-linux-amd64.tar.gz"
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
@@ -61,7 +62,7 @@ WorkingDirectory=${ETCD_DATA_DIR}
 User=${USER}
 # set GOMAXPROCS to number of processors
 ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) ${ETCD_BIN_DIR}/etcd  \\
-                        --name=etcd01 \\
+                        --name=${HOSTNAME} \\
                         --data-dir=${ETCD_DATA_DIR} \\
                         --wal-dir=${ETCD_WAL_DIR} \\
                         --cert-file=${CA_PATH}/etcd.pem \\
