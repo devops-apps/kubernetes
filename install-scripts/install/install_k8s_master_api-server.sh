@@ -252,7 +252,7 @@ if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
 fi
 cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_BIN_PATH
-ln -sf  $K8S_BIN_PATH/* /usr/local/bin
+ln -sf  $K8S_BIN_PATH/$KUBE_NAM /usr/local/bin
 chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
