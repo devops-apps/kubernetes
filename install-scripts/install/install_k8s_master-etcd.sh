@@ -32,13 +32,13 @@ if [ ! -d $ETCD_INSTALL_PATH ]; then
      mkdir $ETCD_INSTALL_PATH
      mkdir -p $ETCD_BIN_DIR
      mkdir -p $ETCD_DATA_DIR
-     mkdir -P $ETCD_WAL_DIR
+     mkdir -p $ETCD_WAL_DIR
      chmod 0755 $ETCD_INSTALL_PATH
 fi
 
 ### 2.Install etcd binary of kubernetes.
 if [ ! -f "$SOFTWARE/etcd-${VERSION}-linux-amd64.tar.gz" ]; then
-     wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
+     sudo wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
 fi
 
 cd $SOFTWARE && tar -xzf etcd-${VERSION}-linux-amd64.tar.gz -C ./
@@ -62,7 +62,7 @@ User=${USER}
 ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) ${ETCD_BIN_DIR}/etcd  \\
                         --name=etcd01 \\
                         --data-dir=${ETCD_DATA_DIR} \\
-			--wal-dir=${ETCD_WAL_DIR} \\
+                        --wal-dir=${ETCD_WAL_DIR} \\
                         --cert-file=${CA_PATH}/etcd.pem \\
                         --key-file=${CA_PATH}/etcd-key.pem \\
                         --trusted-ca-file=${CA_PATH}/ca.pem \\
@@ -79,7 +79,7 @@ ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) ${ETCD_BIN_DIR}/etcd  \\
                         --initial-cluster=${ETCD_ENPOIDTS} \\
                         --initial-cluster-state=new \\
                         --auto-tls=true \\
-			--auto-compaction-mode=periodic \\
+                        --auto-compaction-mode=periodic \\
                         --auto-compaction-retention=1 \\
                         --max-request-bytes=33554432 \\
                         --quota-backend-bytes=6442450944 \\

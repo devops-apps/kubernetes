@@ -90,7 +90,7 @@ sysctl -p /etc/sysctl.d/kubernetes.conf  >>/dev/null 2>&1
 
 # Disable numa for system.
 sudo sed -i "s:numa=off::" /etc/sysconfig/grub
-sudo sed -i "s:centos/swap rhgb:& numa=off:" /etc/sysconfig/grub
+sudo sed -i "s:centos/swap  rhgb:& numa=off:" /etc/sysconfig/grub
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg >>/dev/null 2>&1
 
 # Setting system time zone.

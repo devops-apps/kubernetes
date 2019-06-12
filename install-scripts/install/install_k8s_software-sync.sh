@@ -16,10 +16,10 @@
 
 #################### Variable parameter setting ######################
 SOFTWARE=/root/software
-K8S_PACKAGES_NAME=kubernetes-server-v1.14.2-linux-amd64.tar.gz
+K8S_PACKAGE_NAME=kubernetes-server-v1.14.2-linux-amd64.tar.gz
 ETCD_PACKAGE_NAME=etcd-v3.3.13-linux-amd64.tar.gz
 FLANNEL_PACKAGE_NAME=flannel-v0.11.0-linux-amd64.tar.gz
-K8S_DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/$K8S_PACKAGES_NAME
+K8S_DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/$K8S_PACKAGE_NAME
 ETCD_DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/etcd/$ETCD_PACKAGE_NAME
 FLANNEL_DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/network/$FLANNEL_PACKAGE_NAME
 M1_K8S_IP=10.10.10.22
@@ -59,12 +59,12 @@ EOF
 
 ### 3.sync packages to each server of  kubernetes
 #kubernetes packages
-ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}" -b
-ansible worker_k8s_vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}" -b
+sudo ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}/" -b
+sudo ansible worker_k8s_vgs -m copy -a "src=${SOFTWARE}/$K8S_PACKAGE_NAME dest=${SOFTWARE}/" -b
 
 #etcd package
-ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$ETCD_PACKAGE_NAME dest=${SOFTWARE}" -b
+sudo ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$ETCD_PACKAGE_NAME dest=${SOFTWARE}/" -b
 
 #flannel package
-ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}" -b
-ansible worker_k8s_vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}" -b
+sudo ansible master_k8s_vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}/" -b
+sudo ansible worker_k8s_vgs -m copy -a "src=${SOFTWARE}/$FLANNEL_PACKAGE_NAME dest=${SOFTWARE}/" -b
