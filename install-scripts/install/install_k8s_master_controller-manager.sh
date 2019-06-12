@@ -18,24 +18,57 @@ CONF_PATH=/etc/k8s/kubernetes
 SOFTWARE=/root/software
 VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/${VERSION}/kubernetes-server-linux-amd64.tar.gz
-BIN_NAME=kube-controller-manager
+
+
+KUBE_NAME=kube-controller-manager
+K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
+K8S_BIN_PATH=${K8S_INSTALL_PATH}/bin
+K8S_LOG_DIR=${K8S_INSTALL_PATH}/logs
+K8S_CONF_PATH=/etc/k8s/kubernetes
+CA_DIR=/etc/k8s/ssl
+SOFTWARE=/root/software
+VERSION=v1.14.2
+DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
+ETC_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379
+ETH_INTERFACE=eth1
+LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
+USER=k8s
+CLUSTER_RANG_SUBNET=10.254.0.0/22
+SERVER_PORT_RANG=8400-9400
+
 
 
 ### 1.Check if the install directory exists.
-if [ ! -d $K8S_INSTALL_PATH ]; then
+if [ ! -d "$K8S_INSTALL_PATH" ]; then
      mkdir -p $K8S_INSTALL_PATH
-     
+	 mkdir -p $K8S_BIN_PATH
+else
+     if [ ! -d "$K8S_BIN_PATH" ]; then
+          mkdir -p $K8S_BIN_PATH
+     fi
+fi
+
+if [ ! -d "$K8S_LOG_DIR" ]; then
+     mkdir -p $K8S_LOG_DIR
+	 mkdir -p $K8S_LOG_DIR/$KUBE_NAME
+else
+     if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
+          mkdir -p $K8S_LOG_DIR/$KUBE_NAME
+     fi
+fi
+
+if [ ! -d "$K8S_CONF_PATH" ]; then
+     mkdir -p $K8S_CONF_PATH
 fi
 
 ### 2.Install kube-controller-manager binary of kubernetes.
-mkdir -p $K8S_INSTALL_PATH/bin >>/dev/null
-if [ ! -f "$SOFTWARE/kubernetes-server-linux-amd64.tar.gz" ]; then
-     wget $DOWNLOAD_URL -P $SOFTWARE
+if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
+     wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
 fi
-cd $SOFTWARE && tar -xzf kubernetes-server-linux-amd64.tar.gz -C ./
-cp -fp kubernetes/server/bin/$BIN_NAME $K8S_INSTALL_PATH/bin
-ln -sf  $K8S_INSTALL_PATH/bin/* /usr/local/bin
-chown -R k8s:k8s $K8S_INSTALL_PATH
+cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
+cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_BIN_PATH
+ln -sf  $K8S_BIN_PATH/* /usr/local/bin
+chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.Install the kube-controller-manager service.
@@ -45,30 +78,30 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-User=k8s
-ExecStart=/data/apps/k8s/kubernetes/bin/kube-controller-manager \
-  --port=0 \
-  --secure-port=10252 \
-  --bind-address=127.0.0.1 \
-  --kubeconfig=/etc/k8s/kubeconfig/kube-controller-manager.kubeconfig \
-  --service-cluster-ip-range=10.254.0.0/16 \
-  --cluster-name=kubernetes \
-  --cluster-signing-cert-file=/etc/k8s/ssl/ca.pem \
-  --cluster-signing-key-file=/etc/k8s/ssl/ca-key.pem \
-  --root-ca-file=/etc/k8s/ssl/ca.pem \
-  --service-account-private-key-file=/etc/k8s/ssl/ca-key.pem \
-  --leader-elect=true \
-  --feature-gates=RotateKubeletServerCertificate=true \
-  --controllers=*,bootstrapsigner,tokencleaner \
-  --horizontal-pod-autoscaler-use-rest-clients=true \
-  --horizontal-pod-autoscaler-sync-period=10s \
-  --tls-cert-file=/etc/k8s/ssl/kube-controller-manager.pem \
-  --tls-private-key-file=/etc/k8s/ssl/kube-controller-manager-key.pem \
-  --use-service-account-credentials=true \
-  --alsologtostderr=true \
-  --logtostderr=false \
-  --log-dir=/data/apps/k8s/kubernetes/logs/kube-controller-manager \
-  --flex-volume-plugin-dir=/data/apps/k8s/kubernetes/libexec/kubernetes \
+User=${USER}
+ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
+  --port=0 \\
+  --secure-port=10252 \\
+  --bind-address=127.0.0.1 \\
+  --kubeconfig=${K8S_CONF_PATH}/${KUBE_NAME}.kubeconfig \\
+  --service-cluster-ip-range=${CLUSTER_RANG_SUBNET} \\
+  --cluster-name=kubernetes \\
+  --cluster-signing-cert-file=${CA_DIR}/ca.pem \\
+  --cluster-signing-key-file=${CA_DIR}/ca-key.pem \\
+  --root-ca-file=${CA_DIR}/ca.pem \\
+  --service-account-private-key-file=${CA_DIR}/ca-key.pem \\
+  --leader-elect=true \\
+  --feature-gates=RotateKubeletServerCertificate=true \\
+  --controllers=*,bootstrapsigner,tokencleaner \\
+  --horizontal-pod-autoscaler-use-rest-clients=true \\
+  --horizontal-pod-autoscaler-sync-period=10s \\
+  --tls-cert-file=${CA_DIR}/kube-controller-manager.pem \\
+  --tls-private-key-file=${CA_DIR}/kube-controller-manager-key.pem \\
+  --use-service-account-credentials=true \\
+  --alsologtostderr=true \\
+  --logtostderr=false \\
+  --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
+  --flex-volume-plugin-dir=${K8S_INSTALL_PATH}/libexec/kubernetes \\
   --v=2
 
 Restart=on

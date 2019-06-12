@@ -35,6 +35,7 @@ SERVER_PORT_RANG=8400-9400
 ### 1.Check if the install directory exists.
 if [ ! -d "$K8S_INSTALL_PATH" ]; then
      mkdir -p $K8S_INSTALL_PATH
+	 mkdir -p $K8S_BIN_PATH
 else
      if [ ! -d "$K8S_BIN_PATH" ]; then
           mkdir -p $K8S_BIN_PATH
@@ -43,6 +44,7 @@ fi
 
 if [ ! -d "$K8S_LOG_DIR" ]; then
      mkdir -p $K8S_LOG_DIR
+	 mkdir -p $K8S_LOG_DIR/$KUBE_NAME
 else
      if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
           mkdir -p $K8S_LOG_DIR/$KUBE_NAME
@@ -58,8 +60,8 @@ if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
 fi
 cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
-cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_INSTALL_PATH/bin
-ln -sf  $K8S_INSTALL_PATH/bin/* /usr/local/bin
+cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_BIN_PATH
+ln -sf  $K8S_BIN_PATH/* /usr/local/bin
 chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
@@ -111,7 +113,6 @@ ExecStart=${K8S_INSTALL_PATH}/bin/${KUBE_NAME} \\
   --alsologtostderr=true \\
   --logtostderr=false \\
   --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
-  --log-dir=${K8S_INSTALL_PATH}/logs/${KUBE_NAME} \\
   --v=2
 
 Restart=on-failure
