@@ -78,7 +78,7 @@ ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) ${ETCD_BIN_DIR}/etcd  \\
                         --initial-cluster=${ETCD_ENPOIDTS} \\
                         --initial-cluster-state=new \\
                         --auto-tls=true \\
-						--auto-compaction-mode=periodic \\
+			--auto-compaction-mode=periodic \\
                         --auto-compaction-retention=1 \\
                         --max-request-bytes=33554432 \\
                         --quota-backend-bytes=6442450944 \\
