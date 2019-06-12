@@ -44,7 +44,7 @@ fi
 
 cd $SOFTWARE && tar -xzf etcd-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp etcd-${VERSION}-linux-amd64/etcd* $ETCD_BIN_DIR
-ln -sf  $ETCD_BIN_DIR/* /usr/local/bin
+ln -sf  $ETCD_BIN_DIR/{etcd,etcdctl} /usr/local/bin
 sudo chmod -R 755 $ETCD_INSTALL_PATH
 sudo chown -R $USER:$USER $ETCD_INSTALL_PATH
 
