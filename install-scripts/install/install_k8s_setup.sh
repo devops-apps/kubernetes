@@ -99,6 +99,7 @@ timedatectl set-local-rtc 0
 systemctl restart rsyslog 
 systemctl restart crond
 ntpdate cn.pool.ntp.org
+hwclock -w
 echo ".........................................................................."
 echo "INFO: Set successd of system ..."
 
