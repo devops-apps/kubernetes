@@ -269,6 +269,8 @@ Type=notify
 EnvironmentFile=-${K8S_CONF_PATH}/${KUBE_NAME}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
+  --max-mutating-requests-inflight=2000 \\
+  --max-requests-inflight=4000 \\
   --bind-address=0.0.0.0 \\
   --insecure-bind-address=${LISTEN_IP} \\
   --insecure-port=8080 \\
@@ -277,7 +279,11 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --authorization-mode=Node,RBAC \\
   --anonymous-auth=false \\
   --runtime-config=api/all \\
-  --audit-policy-file=${K8S_CONF_PATH}/audit-policy.yaml \\
+  --requestheader-allowed-names="" \\
+  --requestheader-client-ca-file=${CA_DIR}/ca.pem \\
+  --requestheader-extra-headers-prefix="X-Remote-Extra-" \\
+  --requestheader-group-headers=X-Remote-Group \\
+  --requestheader-username-headers=X-Remote-User \\
   --enable-bootstrap-token-auth=true \\
   --token-auth-file=${CA_DIR}/token.csv \\
   --service-cluster-ip-range=${CLUSTER_RANG_SUBNET} \\
@@ -287,16 +293,31 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --client-ca-file=${CA_DIR}/ca.pem \\
   --service-account-key-file=${CA_DIR}/ca-key.pem \\
   --etcd-cafile=${CA_DIR}/ca.pem \\
+  --delete-collection-workers=2 \\
+  --default-watch-cache-size=200 \\
   --etcd-certfile=${CA_DIR}/etcd.pem \\
   --etcd-keyfile=${CA_DIR}/etcd-key.pem \\
   --etcd-servers=${ETCD_ENDPOIDS} \\
+  --kubelet-certificate-authority=${CA_DIR}/ca.pem \\
+  --kubelet-client-certificate=${CA_DIR}/kubernetes.pem \\
+  --kubelet-client-key=${CA_DIR}/kubernetes-key.pem \\
+  --kubelet-https=true \\
+  --kubelet-timeout=10s \\
+  --proxy-client-cert-file=${CA_DIR}/kube-proxy.pem \\
+  --proxy-client-key-file=￥{CA_DIR}/kube-proxy-key.pem \\
   --enable-swagger-ui=true \\
   --allow-privileged=true \\
   --apiserver-count=3 \\
-  --audit-log-maxage=30 \\
+  --audit-log-mode=batch \\
+  --audit-dynamic-configuration \\  
+  --audit-log-truncate-enabled \\
+  --audit-log-batch-buffer-size=20000 \\
+  --audit-log-batch-max-size=3 \\
+  --audit-log-maxage=15 \\
   --audit-log-maxbackup=3 \\
   --audit-log-maxsize=100 \\
   --audit-log-path=${K8S_LOG_DIR}/${KUBE_NAME}/audit.log \\
+  --audit-policy-file=${K8S_CONF_PATH}/audit-policy.yaml \\
   --storage-backend=etcd3 \\
   --event-ttl=168h \\
   --alsologtostderr=true \\
@@ -304,8 +325,10 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
   --v=2
 
-
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
 EOF
