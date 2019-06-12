@@ -41,7 +41,7 @@ SERVER_PORT_RANG=8400-9400
 ### 1.Check if the install directory exists.
 if [ ! -d "$K8S_INSTALL_PATH" ]; then
      mkdir -p $K8S_INSTALL_PATH
-	 mkdir -p $K8S_BIN_PATH
+     mkdir -p $K8S_BIN_PATH
 else
      if [ ! -d "$K8S_BIN_PATH" ]; then
           mkdir -p $K8S_BIN_PATH
@@ -50,7 +50,7 @@ fi
 
 if [ ! -d "$K8S_LOG_DIR" ]; then
      mkdir -p $K8S_LOG_DIR
-	 mkdir -p $K8S_LOG_DIR/$KUBE_NAME
+     mkdir -p $K8S_LOG_DIR/$KUBE_NAME
 else
      if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
           mkdir -p $K8S_LOG_DIR/$KUBE_NAME
