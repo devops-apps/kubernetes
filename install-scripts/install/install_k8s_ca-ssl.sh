@@ -348,11 +348,11 @@ rm -rf *csr* && rm -rf *json
 #master
 sudo ansible master_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
 sudo ansible master_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ mode=push delete=yes rsync_opts=-avz" -b
-sudo ansible master_k8s_vgs -m shell -a 'chmod 666 ${CA_DIR}' -b
+sudo ansible master_k8s_vgs -m shell -a 'chmod 666 ${CA_DIR}/*' -b
 sudo ansible master_k8s_vgs -m shell -a "rm -rf ${CA_DIR}/admin*" -b
 
 #worker
 sudo ansible worker_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
 sudo ansible worker_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ mode=push delete=yes rsync_opts=-avz" -b
-sudo ansible worker_k8s_vgs -m shell -a 'chmod 666 ${CA_DIR}' -b
+sudo ansible worker_k8s_vgs -m shell -a 'chmod 666 ${CA_DIR}/*' -b
 sudo ansible worker_k8s_vgs -m shell -a "rm -rf ${CA_DIR}/{kube-controller-manager*,kubernetes*,kube-scheduler*,etcd*,admin*}" -b
