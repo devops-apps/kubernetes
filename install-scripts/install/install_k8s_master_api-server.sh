@@ -17,11 +17,8 @@
 #################### Variable parameter setting ######################
 KUBE_NAME=kube-apiserver
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
-<<<<<<< HEAD
 K8S_BIN_PATH=${K8S_INSTALL_PATH}/bin
 K8S_LOG_DIR=${K8S_INSTALL_PATH}/logs
-=======
->>>>>>> 28dc309823948b7d09a72db53fe9966e318cee3e
 K8S_CONF_PATH=/etc/k8s/kubernetes
 CA_DIR=/etc/k8s/ssl
 SOFTWARE=/root/software
@@ -30,10 +27,6 @@ DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kuber
 ETC_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10.24:2379
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
-<<<<<<< HEAD
-=======
-KUBE_NAME=kube-apiserver
->>>>>>> 28dc309823948b7d09a72db53fe9966e318cee3e
 USER=k8s
 CLUSTER_RANG_SUBNET=10.254.0.0/22
 SERVER_PORT_RANG=8400-9400
@@ -43,7 +36,6 @@ SERVER_PORT_RANG=8400-9400
 if [ ! -d "$K8S_INSTALL_PATH" ]; then
      mkdir -p $K8S_INSTALL_PATH
 else
-<<<<<<< HEAD
      if [ ! -d "$K8S_BIN_PATH" ]; then
           mkdir -p $K8S_BIN_PATH
      fi
@@ -57,21 +49,6 @@ else
      fi
 fi
 
-=======
-     if [ ! -d "$K8S_INSTALL_PATH/bin" ]; then
-          mkdir -p $K8S_INSTALL_PATH/bin
-     fi
-fi
-
-if [ ! -d "$K8S_INSTALL_PATH/logs" ]; then
-     mkdir -p $K8S_INSTALL_PATH/logs
-else
-     if [ ! -d "$K8S_INSTALL_PATH/logs/$KUBE_NAME" ]; then
-          mkdir -p $K8S_INSTALL_PATH/logs/$KUBE_NAME
-     fi
-fi
-
->>>>>>> 28dc309823948b7d09a72db53fe9966e318cee3e
 if [ ! -d "$K8S_CONF_PATH" ]; then
      mkdir -p $K8S_CONF_PATH
 fi
@@ -97,11 +74,8 @@ After=network.target
 User=${USER}
 Type=notify
 EnvironmentFile=-${K8S_CONF_PATH}/${KUBE_NAME}
-<<<<<<< HEAD
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
-=======
 ExecStart=${K8S_INSTALL_PATH}/bin/${KUBE_NAME} \\
->>>>>>> 28dc309823948b7d09a72db53fe9966e318cee3e
   --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
   --bind-address=0.0.0.0 \\
   --insecure-bind-address=${LISTEN_IP} \\
@@ -130,20 +104,14 @@ ExecStart=${K8S_INSTALL_PATH}/bin/${KUBE_NAME} \\
   --audit-log-maxage=30 \\
   --audit-log-maxbackup=3 \\
   --audit-log-maxsize=100 \\
-<<<<<<< HEAD
   --audit-log-path=${K8S_LOG_DIR}/${KUBE_NAME}/audit.log \\
-=======
   --audit-log-path=${K8S_INSTALL_PATH}/logs/${KUBE_NAME}/audit.log \\
->>>>>>> 28dc309823948b7d09a72db53fe9966e318cee3e
   --storage-backend=etcd3 \\
   --event-ttl=168h \\
   --alsologtostderr=true \\
   --logtostderr=false \\
-<<<<<<< HEAD
   --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
-=======
   --log-dir=${K8S_INSTALL_PATH}/logs/${KUBE_NAME} \\
->>>>>>> 28dc309823948b7d09a72db53fe9966e318cee3e
   --v=2
 
 Restart=on-failure
