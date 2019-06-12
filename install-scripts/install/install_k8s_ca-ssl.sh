@@ -348,7 +348,7 @@ rm -rf *csr* && rm -rf *json
 #master
 ansible master_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
 ansible master_k8s_vgs -m  synchronize -a "src=/etc/k8s/ssl/  dest=/etc/k8s/ssl/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
-ansible master_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/{kube-proxy*,admin*}" -b
+ansible master_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/admin*" -b
 
 #worker
 ansible worker_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
