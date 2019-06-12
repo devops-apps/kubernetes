@@ -8,7 +8,7 @@
 # Date:  2016-08-17
 # Email: bighank@163.com
 # QQ:    2658757934
-# blog:  http://home.51cto.com/space?uid=6170059
+# blog:  https://blog.51cto.com/blief
 ######################################################################
 
 
@@ -346,14 +346,14 @@ rm -rf *csr* && rm -rf *json
 
 ############################## sync ca files for kubernetes ######################################
 #master
-ansible master_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
-ansible master_k8s_vgs -m  synchronize -a "src=/etc/k8s/ssl/  dest=/etc/k8s/ssl/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
-ansible master_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/admin*" -b
+sudo ansible master_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
+sudo ansible master_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
+sudo ansible master_k8s_vgs -m shell -a "rm -rf ${CA_DIR}/admin*" -b
 
 #worker
-ansible worker_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
-ansible worker_k8s_vgs -m  synchronize -a "src=/etc/k8s/ssl/  dest=/etc/k8s/ssl/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
-ansible worker_k8s_vgs -m shell -a "rm -rf /etc/k8s/ssl/{kube-controller-manager*,kubernetes*,kube-scheduler*,etcd*,admin*}" -b
+sudo ansible worker_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
+sudo ansible worker_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ mode=push  mode=push delete=yes rsync_opts=-avz" -b
+sudo ansible worker_k8s_vgs -m shell -a "rm -rf ${CA_DIR}/{kube-controller-manager*,kubernetes*,kube-scheduler*,etcd*,admin*}" -b
 
 
 
