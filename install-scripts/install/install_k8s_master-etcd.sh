@@ -13,32 +13,38 @@
 
 
 #################### Variable parameter setting ######################
-ETCD_INSTALL_PATH=/data/apps/k8s/etcd
-SOFTWARE=/root/software
-VERSION=v3.3.13
-DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/etcd/etcd-${VERSION}-linux-amd64.tar.gz
-CA_PATH=/etc/k8s/ssl
+ETCD_INSTALL_PATH="/data/apps/k8s/etcd"
+ETCD_BIN_DIR="${ETCD_INSTALL_PATH}/bin"
+ETCD_DATA_DIR="${ETCD_INSTALL_PATH}/data"
+ETCD_WAL_DIR="${ETCD_INSTALL_PATH}/wal"
 ETCD_ENPOIDTS="etcd01=https://10.10.10.22:2380,etcd02=https://10.10.10.23:2380,etcd03=https://10.10.10.24:2380"
+CA_PATH="/etc/k8s/ssl"
+SOFTWARE="/root/software"
+VERSION=v3.3.13
+DOWNLOAD_URL="https://github.com/devops-apps/download/raw/master/etcd/etcd-${VERSION}-linux-amd64.tar.gz"
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
 USER=k8s
 
+
 ### 1.Check if the install directory exists.
 if [ ! -d $ETCD_INSTALL_PATH ]; then
      mkdir $ETCD_INSTALL_PATH
-	 mkdir -p $ETCD_INSTALL_PATH/{bin,data}
+	 mkdir -p $ETCD_BIN_DIR
+	 mkdir -p $ETCD_DATA_DIR
+	 mkdir -P $ETCD_WAL_DIR
      chmod 0755 $ETCD_INSTALL_PATH
 fi
 
 ### 2.Install etcd binary of kubernetes.
 if [ ! -f "$SOFTWARE/etcd-${VERSION}-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
-     chmod -R 755 $ETCD_INSTALL_PATH
 fi
 
 cd $SOFTWARE && tar -xzf etcd-${VERSION}-linux-amd64.tar.gz -C ./
-cp -fp etcd-${VERSION}-linux-amd64/etcd* $ETCD_INSTALL_PATH/bin
-ln -sf  $ETCD_INSTALL_PATH/bin/* /usr/local/bin
+cp -fp etcd-${VERSION}-linux-amd64/etcd* $ETCD_BIN_DIR
+ln -sf  $ETCD_BIN_DIR/* /usr/local/bin
+sudo chmod -R 755 $ETCD_INSTALL_PATH
 sudo chown -R $USER:$USER $ETCD_INSTALL_PATH
 
 ### 3.Install service of etcd .
@@ -50,12 +56,12 @@ After=network-online.target
 Wants=network-online.target
 [Service]
 Type=notify
-WorkingDirectory=${ETCD_INSTALL_PATH}/data
+WorkingDirectory=${ETCD_DATA_DIR}
 User=${USER}
 # set GOMAXPROCS to number of processors
-ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) /usr/local/bin/etcd  \\
+ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) ${ETCD_BIN_DIR}/etcd  \\
                         --name=etcd01 \\
-                        --data-dir=${ETCD_INSTALL_PATH}/data \\
+                        --data-dir=${ETCD_DATA_DIR} \\
                         --cert-file=${CA_PATH}/etcd.pem \\
                         --key-file=${CA_PATH}/etcd-key.pem \\
                         --trusted-ca-file=${CA_PATH}/ca.pem \\
@@ -72,9 +78,17 @@ ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) /usr/local/bin/etcd  \\
                         --initial-cluster=${ETCD_ENPOIDTS} \\
                         --initial-cluster-state=new \\
                         --auto-tls=true \\
+						--auto-compaction-mode=periodic \\
+                        --auto-compaction-retention=1 \\
+                        --max-request-bytes=33554432 \\
+                        --quota-backend-bytes=6442450944 \\
+                        --heartbeat-interval=250 \\
+                        --election-timeout=2000
                         --peer-auto-tls=true"
+						
 Restart=on-failure
 LimitNOFILE=65536
+
 [Install]
 WantedBy=multi-user.target
 EOF
