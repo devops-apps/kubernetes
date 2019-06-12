@@ -8,38 +8,58 @@
 # Date:  2016-08-17
 # Email: bighank@163.com
 # QQ:    2658757934
-# blog:  http://home.51cto.com/space?uid=6170059
+# blog:  https://blog.51cto.com/blief
 ######################################################################
 
 
 #################### Variable parameter setting ######################
+KUBE_NAME=kube-scheduler
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
-CONF_PATH=/etc/k8s/kubernetes
+K8S_BIN_PATH=${K8S_INSTALL_PATH}/sbin
+K8S_LOG_DIR=${K8S_INSTALL_PATH}/logs
+K8S_KUBECONFIG_PATH=/etc/k8s/kubeconfig
+CA_DIR=/etc/k8s/ssl
 SOFTWARE=/root/software
 VERSION=v1.14.2
-DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/${VERSION}/kubernetes-server-linux-amd64.tar.gz
-BIN_NAME=kube-scheduler
+DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
+USER=k8s
 
 
 ### 1.Check if the install directory exists.
-if [ ! -d $K8S_INSTALL_PATH ]; then
+if [ ! -d "$K8S_INSTALL_PATH" ]; then
      mkdir -p $K8S_INSTALL_PATH
-     
+     mkdir -p $K8S_BIN_PATH
+else
+     if [ ! -d "$K8S_BIN_PATH" ]; then
+          mkdir -p $K8S_BIN_PATH
+     fi
+fi
+
+if [ ! -d "$K8S_LOG_DIR" ]; then
+     mkdir -p $K8S_LOG_DIR
+     mkdir -p $K8S_LOG_DIR/$KUBE_NAME
+else
+     if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
+          mkdir -p $K8S_LOG_DIR/$KUBE_NAME
+     fi
+fi
+
+if [ ! -d "$K8S_CONF_PATH" ]; then
+     mkdir -p $K8S_KUBECONFIG_PATH
 fi
 
 ### 2.Install kube-apiserver binary of kubernetes.
-mkdir -p $K8S_INSTALL_PATH/bin >>/dev/null
-if [ ! -f "$SOFTWARE/kubernetes-server-linux-amd64.tar.gz" ]; then
-     wget $DOWNLOAD_URL -P $SOFTWARE
+if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
+     wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
 fi
-cd $SOFTWARE && tar -xzf kubernetes-server-linux-amd64.tar.gz -C ./
-cp -fp kubernetes/server/bin/$BIN_NAME $K8S_INSTALL_PATH/bin
-ln -sf  $K8S_INSTALL_PATH/bin/* /usr/local/bin
-chown -R k8s:k8s $K8S_INSTALL_PATH
+cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
+cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_BIN_PATH
+ln -sf  $K8S_BIN_PATH/* /usr/local/bin
+chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.Install the kube-scheduler service.
-cat >/usr/lib/systemd/system/kube-scheduler.service<<"EOF"
+cat >/usr/lib/systemd/system/${KUBE_NAME}.service<<"EOF"
 [Unit]
 Description=Kubernetes kube-scheduler Service
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
@@ -47,14 +67,14 @@ After=network.target
 After=etcd.service
 
 [Service]
-User=k8s
-ExecStart=/data/apps/k8s/kubernetes/bin/kube-scheduler \
+User=${USER}
+ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \
   --address=127.0.0.1 \
-  --kubeconfig=/etc/k8s/kubeconfig/kube-scheduler.kubeconfig \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/${KUBE_NAME}.kubeconfig \
   --leader-elect=true \
   --alsologtostderr=true \
   --logtostderr=false \
-  --log-dir=/data/apps/k8s/kubernetes/logs/kube-scheduler \
+  --log-dir=${K8S_LOG_DIR/$KUBE_NAME} \
   --v=2
 
 Restart=on-failure

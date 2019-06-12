@@ -55,7 +55,198 @@ if [ ! -d "$K8S_CONF_PATH" ]; then
      mkdir -p $K8S_CONF_PATH
 fi
 
-### 2.Install kube-apiserver binary of kubernetes.
+### 2.Create aduit-policy-file for kube-apiserver
+cat>${K8S_CONF_PATH}/audit-policy.yaml<<EOF
+apiVersion: audit.k8s.io/v1beta1
+kind: Policy
+rules:
+  # The following requests were manually identified as high-volume and low-risk, so drop them.
+  - level: None
+    resources:
+      - group: ""
+        resources:
+          - endpoints
+          - services
+          - services/status
+    users:
+      - 'system:kube-proxy'
+    verbs:
+      - watch
+
+  - level: None
+    resources:
+      - group: ""
+        resources:
+          - nodes
+          - nodes/status
+    userGroups:
+      - 'system:nodes'
+    verbs:
+      - get
+
+  - level: None
+    namespaces:
+      - kube-system
+    resources:
+      - group: ""
+        resources:
+          - endpoints
+    users:
+      - 'system:kube-controller-manager'
+      - 'system:kube-scheduler'
+      - 'system:serviceaccount:kube-system:endpoint-controller'
+    verbs:
+      - get
+      - update
+
+  - level: None
+    resources:
+      - group: ""
+        resources:
+          - namespaces
+          - namespaces/status
+          - namespaces/finalize
+    users:
+      - 'system:apiserver'
+    verbs:
+      - get
+
+  # Don't log HPA fetching metrics.
+  - level: None
+    resources:
+      - group: metrics.k8s.io
+    users:
+      - 'system:kube-controller-manager'
+    verbs:
+      - get
+      - list
+
+  # Don't log these read-only URLs.
+  - level: None
+    nonResourceURLs:
+      - '/healthz*'
+      - /version
+      - '/swagger*'
+
+  # Don't log events requests.
+  - level: None
+    resources:
+      - group: ""
+        resources:
+          - events
+
+  # node and pod status calls from nodes are high-volume and can be large, don't log responses for expected updates from nodes
+  - level: Request
+    omitStages:
+      - RequestReceived
+    resources:
+      - group: ""
+        resources:
+          - nodes/status
+          - pods/status
+    users:
+      - kubelet
+      - 'system:node-problem-detector'
+      - 'system:serviceaccount:kube-system:node-problem-detector'
+    verbs:
+      - update
+      - patch
+
+  - level: Request
+    omitStages:
+      - RequestReceived
+    resources:
+      - group: ""
+        resources:
+          - nodes/status
+          - pods/status
+    userGroups:
+      - 'system:nodes'
+    verbs:
+      - update
+      - patch
+
+  # deletecollection calls can be large, don't log responses for expected namespace deletions
+  - level: Request
+    omitStages:
+      - RequestReceived
+    users:
+      - 'system:serviceaccount:kube-system:namespace-controller'
+    verbs:
+      - deletecollection
+
+  # Secrets, ConfigMaps, and TokenReviews can contain sensitive & binary data,
+  # so only log at the Metadata level.
+  - level: Metadata
+    omitStages:
+      - RequestReceived
+    resources:
+      - group: ""
+        resources:
+          - secrets
+          - configmaps
+      - group: authentication.k8s.io
+        resources:
+          - tokenreviews
+  # Get repsonses can be large; skip them.
+  - level: Request
+    omitStages:
+      - RequestReceived
+    resources:
+      - group: ""
+      - group: admissionregistration.k8s.io
+      - group: apiextensions.k8s.io
+      - group: apiregistration.k8s.io
+      - group: apps
+      - group: authentication.k8s.io
+      - group: authorization.k8s.io
+      - group: autoscaling
+      - group: batch
+      - group: certificates.k8s.io
+      - group: extensions
+      - group: metrics.k8s.io
+      - group: networking.k8s.io
+      - group: policy
+      - group: rbac.authorization.k8s.io
+      - group: scheduling.k8s.io
+      - group: settings.k8s.io
+      - group: storage.k8s.io
+    verbs:
+      - get
+      - list
+      - watch
+
+  # Default level for known APIs
+  - level: RequestResponse
+    omitStages:
+      - RequestReceived
+    resources:
+      - group: ""
+      - group: admissionregistration.k8s.io
+      - group: apiextensions.k8s.io
+      - group: apiregistration.k8s.io
+      - group: apps
+      - group: authentication.k8s.io
+      - group: authorization.k8s.io
+      - group: autoscaling
+      - group: batch
+      - group: certificates.k8s.io
+      - group: extensions
+      - group: metrics.k8s.io
+      - group: networking.k8s.io
+      - group: policy
+      - group: rbac.authorization.k8s.io
+      - group: scheduling.k8s.io
+      - group: settings.k8s.io
+      - group: storage.k8s.io
+      
+  # Default level for all other requests.
+  - level: Metadata
+    omitStages:
+      - RequestReceived
+EOF
+
+### 3.Install kube-apiserver binary of kubernetes.
 if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
 fi
@@ -65,7 +256,7 @@ ln -sf  $K8S_BIN_PATH/* /usr/local/bin
 chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
-### 3.Install the kube-apiserver service.
+### 4.Install the kube-apiserver service.
 cat >/usr/lib/systemd/system/${KUBE_NAME}.service<<EOF
 [Unit]
 Description=Kubernetes API Server
@@ -88,7 +279,7 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --runtime-config=api/all \\
   --audit-policy-file=${K8S_CONF_PATH}/audit-policy.yaml \\
   --enable-bootstrap-token-auth=true \\
-  --token-auth-file=${K8S_CONF_PATH}/token.csv \\
+  --token-auth-file=${CA_DIR}/token.csv \\
   --service-cluster-ip-range=${CLUSTER_RANG_SUBNET} \\
   --service-node-port-range=${SERVER_PORT_RANG} \\
   --tls-cert-file=${CA_DIR}/kubernetes.pem \\
