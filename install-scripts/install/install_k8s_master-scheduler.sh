@@ -87,7 +87,7 @@ EOF
 
 
 ### 4.Install the kube-scheduler service.
-cat >/usr/lib/systemd/system/${KUBE_NAME}.service<<"EOF"
+cat >/usr/lib/systemd/system/${KUBE_NAME}.service<<EOF
 [Unit]
 Description=Kubernetes kube-scheduler Service
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
