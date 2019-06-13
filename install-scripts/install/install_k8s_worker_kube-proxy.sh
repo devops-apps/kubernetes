@@ -8,67 +8,107 @@
 # Date:  2016-08-17
 # Email: bighank@163.com
 # QQ:    2658757934
-# blog:  http://home.51cto.com/space?uid=6170059
+# blog:  https://blog.51cto.com/blief
 ######################################################################
 
 
 #################### Variable parameter setting ######################
+KUBE_NAME=kube-proxy
 K8S_INSTALL_PATH=/data/apps/k8s/kubernetes
-CONF_PATH=/etc/k8s/kubernetes
+K8S_BIN_PATH=${K8S_INSTALL_PATH}/sbin
+K8S_LOG_DIR=${K8S_INSTALL_PATH}/logs
+K8S_CONF_PATH=/etc/k8s/kubernetes
+KUBE_CONFIG_PATH=/etc/k8s/kubeconfig
+CA_DIR=/etc/k8s/ssl
 SOFTWARE=/root/software
+HOSTNAME=`hostname`
 VERSION=v1.14.2
-DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/${VERSION}/kubernetes-server-linux-amd64.tar.gz
-BIN_NAME=kube-proxy
+DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
+ETH_INTERFACE=eth1
+LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
+USER=k8s
+CLUSTER_RANG_SUBNET=10.254.0.0/22
+
 
 ### 1.Check if the install directory exists.
-if [ ! -d $K8S_INSTALL_PATH ]; then
+if [ ! -d "$K8S_INSTALL_PATH" ]; then
      mkdir -p $K8S_INSTALL_PATH
-     
+     mkdir -p $K8S_BIN_PATH
+else
+     if [ ! -d "$K8S_BIN_PATH" ]; then
+          mkdir -p $K8S_BIN_PATH
+     fi
 fi
 
-### 2.Install the kube-proxy binary.
-mkdir -p $K8S_INSTALL_PATH/bin >>/dev/null
-if [ ! -f "$SOFTWARE/kubernetes-server-linux-amd64.tar.gz" ]; then
-     wget $DOWNLOAD_URL -P $SOFTWARE
+if [ ! -d "$K8S_LOG_DIR" ]; then
+     mkdir -p $K8S_LOG_DIR
+     mkdir -p $K8S_LOG_DIR/$KUBE_NAME
+else
+     if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
+          mkdir -p $K8S_LOG_DIR/$KUBE_NAME
+     fi
 fi
-cd $SOFTWARE && tar -xzf kubernetes-server-linux-amd64.tar.gz -C ./
-cp -fp kubernetes/server/bin/$BIN_NAME $K8S_INSTALL_PATH/bin
-ln -sf  $K8S_INSTALL_PATH/bin/* /usr/local/bin
-chown -R k8s:k8s $K8S_INSTALL_PATH
+
+if [ ! -d "$K8S_CONF_PATH" ]; then
+     mkdir -p $K8S_CONF_PATH
+     chmod 755 $K8S_CONF_PATH
+fi
+
+if [ ! -d "$KUBE_CONFIG_PATH" ]; then
+     mkdir -p $KUBE_CONFIG_PATH
+     chmod 755 $KUBE_CONFIG_PATH
+fi
+
+### 2.Install kube-proxy binary of kubernetes.
+if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
+     wget $DOWNLOAD_URL -P $SOFTWARE >>/tmp/install.log  2>&1
+fi
+cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
+cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_BIN_PATH
+ln -sf  $K8S_BIN_PATH/${KUBE_NAME} /usr/local/bin
+chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
-
 ### 3.Config the kube-proxy conf.
-mkdir -p >$CONF_PATH >>/dev/null
-cat >$CONF_PATH/kube-proxy.config.yaml<<"EOF"
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-bindAddress: 10.0.0.22
-clientConnection:
-  kubeconfig: /etc/k8s/kubernetes/kube-proxy.kubeconfig
-clusterCIDR: 10.10.0.0/16
-healthzBindAddress: 10.0.0.22:10256
-hostnameOverride: kube-node2
+cat >${K8S_CONF_PATH}/kube-proxy-config.yaml<<"EOF"
 kind: KubeProxyConfiguration
-metricsBindAddress: 10.0.0.22:10249
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+clientConnection:
+  burst: 200
+  kubeconfig: "${KUBE_CONFIG_PATH}/kube-proxy.kubeconfig"
+  qps: 100
+bindAddress: ${LISTEN_IP}
+healthzBindAddress: ${LISTEN_IP}:10256
+metricsBindAddress: ${LISTEN_IP}:10249
+enableProfiling: true
+clusterCIDR: ${CLUSTER_RANG_SUBNET}
+hostnameOverride: ${HOSTNAME}
 mode: "ipvs"
+portRange: ""
+kubeProxyIPTablesConfiguration:
+  masqueradeAll: false
+kubeProxyIPVSConfiguration:
+  scheduler: rr
+  excludeCIDRs: []
 EOF
 
-
 ### 4.Install the kube-proxy service.
-cat >/usr/lib/systemd/system/kube-proxy.service <<"EOF"
+cat >/usr/lib/systemd/system/${KUBE_NAME}.service <<EOF
 [Unit]
 Description=Kubernetes Kube-Proxy Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
 
 [Service]
-WorkingDirectory=/var/lib/kube-proxy
-ExecStart=/opt/k8s/bin/kube-proxy \
-  --config=/etc/k8s/kubernetes/kube-proxy.config.yaml \
-  --alsologtostderr=true \
-  --logtostderr=false \
-  --log-dir=/data/apps/k8s/kubernetes/logs/kube-proxy \
+User=${USER}
+WorkingDirectory=${K8S_BIN_PATH}
+ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
+  --config=${K8S_CONF_PATH}/kube-proxy-config.yaml \\
+   --alsologtostderr=true \\
+  --logtostderr=false \\
+  --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
   --v=2
+
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=65536

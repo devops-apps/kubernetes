@@ -67,7 +67,7 @@ chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.Install the kube-controller-manager service.
-cat >/usr/lib/systemd/system/${KUBE_NAME}.service<<"EOF"
+cat >/usr/lib/systemd/system/${KUBE_NAME}.service<<EOF
 [Unit]
 Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes

@@ -15,19 +15,20 @@
 #################### Variable parameter setting ######################
 K8S_KUBECONFIG_PATH=/etc/k8s/kubeconfig
 CA_DIR=/etc/k8s/ssl
-KUBE_APISERVER=dev-kube-api.mo9.com
+KUBE_APISERVER=https://dev-kube-api.mo9.com
+BOOTSTRAP_TOKEN=$(cat /etc/k8s/kubernetes/token.csv | awk -F "," '{ print $1}')
 
 
 [ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
 
 ##############################  Kubeconfig install of kubernetes  ######################################
-#1.Check if directory exists .
-if [ ! -d "$K8S_CONF_PATH" ]; then
+# Check if directory exists .
+if [ ! -d "$K8S_KUBECONFIG_PATH" ]; then
      mkdir -p $K8S_KUBECONFIG_PATH
 	 chmod 755 $K8S_KUBECONFIG_PATH
 fi
 
-#2.Install the  kubeconfig for kube-controller-manager
+#1.Install the  kubeconfig for kube-controller-manager
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -47,7 +48,8 @@ kubectl config set-context system:kube-controller-manager \
 
 kubectl config use-context system:kube-controller-manager --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-controller-manager.kubeconfig
 
-#3.Install the  kubeconfig for kube-scheduler
+
+#2.Install the  kubeconfig for kube-scheduler
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -66,6 +68,67 @@ kubectl config set-context system:kube-scheduler \
   --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-scheduler.kubeconfig
 
 kubectl config use-context system:kube-scheduler --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-scheduler.kubeconfig
+
+
+#3.Install the  kubeconfig for kubelet
+kubectl config set-cluster kubernetes \
+  --certificate-authority=${CA_DIR}/ca.pem \
+  --embed-certs=true \
+  --server=${KUBE_APISERVER} \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/bootstrap.kubeconfig
+  
+kubectl config set-credentials kubelet-bootstrap \
+  --token=${BOOTSTRAP_TOKEN} \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/bootstrap.kubeconfig
+
+kubectl config set-context default \
+  --cluster=kubernetes \
+  --user=kubelet-bootstrap \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/bootstrap.kubeconfig
+  
+kubectl config use-context default --kubeconfig=${K8S_KUBECONFIG_PATH}/bootstrap.kubeconfig
+
+
+#4.Install the  kubeconfig for kube-proxy
+kubectl config set-cluster kubernetes \
+  --certificate-authority=${CA_DIR}/ca.pem \
+  --embed-certs=true \
+  --server=${KUBE_APISERVER} \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-proxy.kubeconfig
+
+kubectl config set-credentials kube-proxy \
+  --client-certificate=${CA_DIR}/kube-proxy.pem \
+  --client-key=${CA_DIR}/kube-proxy-key.pem \
+  --embed-certs=true \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-proxy.kubeconfig
+
+kubectl config set-context default \
+  --cluster=kubernetes \
+  --user=kube-proxy \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-proxy.kubeconfig
+
+kubectl config use-context default --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-proxy.kubeconfig
+
+#5.Install the  kubeconfig for kubectl
+kubectl config set-cluster kubernetes \
+  --certificate-authority=${CA_DIR}/ca.pem \
+  --embed-certs=true \
+  --server=${KUBE_APISERVER} \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/kubectl.kubeconfig
+
+
+kubectl config set-credentials admin \
+  --client-certificate=${CA_DIR}/admin.pem \
+  --client-key=${CA_DIR}/admin-key.pem \
+  --embed-certs=true \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/kubectl.kubeconfig
+
+kubectl config set-context kubernetes \
+  --cluster=kubernetes \
+  --user=admin \
+  --kubeconfig=${K8S_KUBECONFIG_PATH}/kubectl.kubeconfig
+
+kubectl config use-context kubernetes --kubeconfig=${K8S_KUBECONFIG_PATH}/kubectl.kubeconfig
 
 
 ############################## sync encryption-config files for kubernetes apiserver ######################################
