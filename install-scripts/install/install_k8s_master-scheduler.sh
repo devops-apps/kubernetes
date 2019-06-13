@@ -115,7 +115,7 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \
   --leader-elect=true \\
   --alsologtostderr=true \\
   --logtostderr=true \\
-  --log-dir=${K8S_LOG_DIR/$KUBE_NAME} \\
+  --log-dir=${K8S_LOG_DIR}/$KUBE_NAME} \\
   --v=2
 
 Restart=on-failure
