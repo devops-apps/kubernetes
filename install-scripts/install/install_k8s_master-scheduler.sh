@@ -68,7 +68,7 @@ chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.Create configure file of kube-scheduler.
-cat >${K8S_CONF_PATH}kube-scheduler.yaml<<EOF
+cat >${K8S_CONF_PATH}/kube-scheduler.yaml<<EOF
 apiVersion: kubescheduler.config.k8s.io/v1alpha1
 kind: KubeSchedulerConfiguration
 bindTimeoutSeconds: 600
@@ -101,8 +101,8 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \
   --address=${LISTEN_IP} \\
   --secure-port=10259 \\
   --port=0 \\
-  --tls-cert-file=/etc/kubernetes/cert/kube-scheduler.pem \\
-  --tls-private-key-file=/etc/kubernetes/cert/kube-scheduler-key.pem \\
+  --tls-cert-file=${CA_DIR}/kube-scheduler.pem \\
+  --tls-private-key-file=${CA_DIR}/kube-scheduler-key.pem \\
   --kubeconfig=${K8S_KUBECONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
   --authentication-kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
   --authorization-kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
@@ -114,7 +114,7 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \
   --requestheader-username-headers=X-Remote-User \\
   --leader-elect=true \\
   --alsologtostderr=true \\
-  --logtostderr=true \\
+  --logtostderr=false \\
   --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
   --v=2
 
