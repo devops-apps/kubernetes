@@ -24,6 +24,8 @@ SOFTWARE=/root/software
 VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
 USER=k8s
+ETH_INTERFACE=eth1
+LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
 CLUSTER_RANG_SUBNET=10.254.0.0/22
 
 
@@ -77,7 +79,7 @@ User=${USER}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --port=0 \\
   --secure-port=10252 \\
-  --bind-address=127.0.0.1 \\
+  --bind-address=${LISTEN_IP} \\
   --kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
   --authentication-kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
   --authorization-kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\

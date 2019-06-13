@@ -28,7 +28,7 @@ if [ ! -d "$K8S_KUBECONFIG_PATH" ]; then
 	 chmod 755 $K8S_KUBECONFIG_PATH
 fi
 
-#1.Install the  kubeconfig for kube-controller-manager
+# 1.Install the  kubeconfig for kube-controller-manager
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -49,7 +49,7 @@ kubectl config set-context system:kube-controller-manager \
 kubectl config use-context system:kube-controller-manager --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-controller-manager.kubeconfig
 
 
-#2.Install the  kubeconfig for kube-scheduler
+# 2.Install the  kubeconfig for kube-scheduler
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -70,7 +70,7 @@ kubectl config set-context system:kube-scheduler \
 kubectl config use-context system:kube-scheduler --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-scheduler.kubeconfig
 
 
-#3.Install the  kubeconfig for kubelet
+# 3.Install the  kubeconfig for kubelet
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -89,7 +89,7 @@ kubectl config set-context default \
 kubectl config use-context default --kubeconfig=${K8S_KUBECONFIG_PATH}/bootstrap.kubeconfig
 
 
-#4.Install the  kubeconfig for kube-proxy
+# 4.Install the  kubeconfig for kube-proxy
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -109,7 +109,7 @@ kubectl config set-context default \
 
 kubectl config use-context default --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-proxy.kubeconfig
 
-#5.Install the  kubeconfig for kubectl
+# 5.Install the  kubeconfig for kubectl
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \

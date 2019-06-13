@@ -112,7 +112,6 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \
   --requestheader-extra-headers-prefix="X-Remote-Extra-" \\
   --requestheader-group-headers=X-Remote-Group \\
   --requestheader-username-headers=X-Remote-User \\
-  --leader-elect=true \\
   --alsologtostderr=true \\
   --logtostderr=false \\
   --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
