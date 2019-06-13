@@ -268,7 +268,7 @@ User=${USER}
 Type=notify
 EnvironmentFile=-${K8S_CONF_PATH}/${KUBE_NAME}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
-  --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
+  --enable-admission-plugins=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
   --max-mutating-requests-inflight=2000 \\
   --max-requests-inflight=4000 \\
   --bind-address=0.0.0.0 \\
@@ -285,7 +285,7 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --requestheader-group-headers=X-Remote-Group \\
   --requestheader-username-headers=X-Remote-User \\
   --enable-bootstrap-token-auth=true \\
-  --token-auth-file=${CA_DIR}/token.csv \\
+  --token-auth-file=${K8S_CONF_PATH}/token.csv \\
   --service-cluster-ip-range=${CLUSTER_RANG_SUBNET} \\
   --service-node-port-range=${SERVER_PORT_RANG} \\
   --tls-cert-file=${CA_DIR}/kubernetes.pem \\
@@ -309,8 +309,7 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --allow-privileged=true \\
   --apiserver-count=3 \\
   --audit-log-mode=batch \\
-  --audit-dynamic-configuration \\  
-  --audit-log-truncate-enabled \\
+  --audit-log-truncate-enabled=true \\
   --audit-log-batch-buffer-size=20000 \\
   --audit-log-batch-max-size=3 \\
   --audit-log-maxage=15 \\

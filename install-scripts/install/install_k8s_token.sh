@@ -14,7 +14,7 @@
 
 #################### Variable parameter setting ######################
 K8S_CONF_PATH=/etc/k8s/kubernetes
-ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
+BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
 
 
 [ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
@@ -27,24 +27,14 @@ fi
 
 #2.Install the cfssl tools
 
-cat > ${K8S_CONF_PATH}/encryption-config.yaml <<EOF
-kind: EncryptionConfig
-apiVersion: v1
-resources:
-  - resources:
-      - secrets
-    providers:
-      - aescbc:
-          keys:
-            - name: key1
-              secret: ${ENCRYPTION_KEY}
-      - identity: {}
+cat > ${K8S_CONF_PATH}/token.csv <<EOF
+${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
 EOF
 
 
 ############################## sync encryption-config files for kubernetes apiserver ######################################
 #master
-ansible master_k8s_vgs -m  copy -a "src=${K8S_CONF_PATH}/encryption-config.yaml  dest=${K8S_CONF_PATH}/encryption-config.yaml" -b
+ansible master_k8s_vgs -m  copy -a "src=${K8S_CONF_PATH}/token.csv  dest=${K8S_CONF_PATH}/" -b
 
 
 

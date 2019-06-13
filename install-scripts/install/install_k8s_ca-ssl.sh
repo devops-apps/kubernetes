@@ -50,7 +50,7 @@ if [ $? != 0 ]; then
      wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64 -P $SSL_BIN_PATH/bin/  > /dev/null 2>&1
      cd  $SSL_BIN_PATH/bin/
      mv cfssl_linux-amd64 cfssl  && mv cfssljson_linux-amd64 cfssljson && mv cfssl-certinfo_linux-amd64 cfssl-certinfo
-     chmod +x * && ln -sf $SSL_BIN_PATH/bin/* /usr/local/bin/
+     chmod +x * && ln -sf $SSL_BIN_PATH/bin/cfssl* /usr/local/bin/
      echo ".........................................................................."
      echo "INFO: Install successd of ca tool ..."
 fi

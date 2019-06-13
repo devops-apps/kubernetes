@@ -70,5 +70,11 @@ kubectl config use-context system:kube-scheduler --kubeconfig=${K8S_KUBECONFIG_P
 
 ############################## sync encryption-config files for kubernetes apiserver ######################################
 #master
-#ansible master_k8s_vgs -m copy -a "src=${K8S_KUBECONFIG_PATH}/kube-controller-manage.kubeconfig  dest=${K8S_KUBECONFIG_PATH}/kube-controller-manage.kubeconfig" -b
-#ansible master_k8s_vgs -m copy -a "src=${K8S_KUBECONFIG_PATH}/kube-scheduler.kubeconfig  dest=${K8S_KUBECONFIG_PATH}/kube-scheduler.kubeconfig" -b
+sudo ansible master_k8s_vgs -m  synchronize -a "src=${K8S_KUBECONFIG_PATH}/  dest=${K8S_KUBECONFIG_PATH}/ mode=push delete=yes rsync_opts=-avz" -b
+sudo ansible master_k8s_vgs -m shell -a "chmod 666 ${K8S_KUBECONFIG_PATH}/*" -b
+sudo ansible master_k8s_vgs -m shell -a "rm -rf ${K8S_KUBECONFIG_PATH}/{kubelet*,kube-proxy*}" -b
+
+#worker
+sudo ansible worker_k8s_vgs -m  synchronize -a "src=${K8S_KUBECONFIG_PATH}/  dest=${K8S_KUBECONFIG_PATH}/ mode=push delete=yes rsync_opts=-avz" -b
+sudo ansible worker_k8s_vgs -m shell -a "chmod 666 ${K8S_KUBECONFIG_PATH}/*" -b
+sudo ansible worker_k8s_vgs -m shell -a "rm -rf ${K8S_KUBECONFIG_PATH}/{kube-controller*,kube-scheduler*}" -b
