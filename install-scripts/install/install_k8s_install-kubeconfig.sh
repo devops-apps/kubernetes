@@ -14,21 +14,37 @@
 
 #################### Variable parameter setting ######################
 K8S_KUBECONFIG_PATH=/etc/k8s/kubeconfig
+K8S_CONF_PATH=/etc/k8s/kubernetes
 CA_DIR=/etc/k8s/ssl
 KUBE_APISERVER=https://dev-kube-api.mo9.com
-BOOTSTRAP_TOKEN=$(cat /etc/k8s/kubernetes/token.csv | awk -F "," '{ print $1}')
+BOOTSTRAP_TOKEN=$(head -c 16 /dev/urandom | od -An -t x | tr -d ' ')
 
 
 [ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
 
+##############################  Token install for kubernetes-apiser authority ######################################
+# 1.Check if directory exists .
+if [ ! -d "$K8S_CONF_PATH" ]; then
+     mkdir -p $K8S_CONF_PATH
+fi
+
+# 2.Install the cfssl tools
+cat > ${K8S_CONF_PATH}/token.csv <<EOF
+${BOOTSTRAP_TOKEN},kubelet-bootstrap,10001,"system:kubelet-bootstrap"
+EOF
+
+# 3. sync kubeconfig files to each nodes for kubernetes cluster
+ansible master_k8s_vgs -m  copy -a "src=${K8S_CONF_PATH}/token.csv  dest=${K8S_CONF_PATH}/" -b
+
+
 ##############################  Kubeconfig install of kubernetes  ######################################
-# Check if directory exists .
+# 1.Check if directory exists .
 if [ ! -d "$K8S_KUBECONFIG_PATH" ]; then
      mkdir -p $K8S_KUBECONFIG_PATH
 	 chmod 755 $K8S_KUBECONFIG_PATH
 fi
 
-# 1.Install the  kubeconfig for kube-controller-manager
+# 2.Install the  kubeconfig for kube-controller-manager
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -48,8 +64,7 @@ kubectl config set-context system:kube-controller-manager \
 
 kubectl config use-context system:kube-controller-manager --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-controller-manager.kubeconfig
 
-
-# 2.Install the  kubeconfig for kube-scheduler
+# 3.Install the  kubeconfig for kube-scheduler
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -69,8 +84,7 @@ kubectl config set-context system:kube-scheduler \
 
 kubectl config use-context system:kube-scheduler --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-scheduler.kubeconfig
 
-
-# 3.Install the  kubeconfig for kubelet
+# 4.Install the  kubeconfig for kubelet
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -88,8 +102,7 @@ kubectl config set-context default \
   
 kubectl config use-context default --kubeconfig=${K8S_KUBECONFIG_PATH}/bootstrap.kubeconfig
 
-
-# 4.Install the  kubeconfig for kube-proxy
+# 5.Install the  kubeconfig for kube-proxy
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
@@ -109,13 +122,12 @@ kubectl config set-context default \
 
 kubectl config use-context default --kubeconfig=${K8S_KUBECONFIG_PATH}/kube-proxy.kubeconfig
 
-# 5.Install the  kubeconfig for kubectl
+# 6.Install the  kubeconfig for kubectl
 kubectl config set-cluster kubernetes \
   --certificate-authority=${CA_DIR}/ca.pem \
   --embed-certs=true \
   --server=${KUBE_APISERVER} \
   --kubeconfig=${K8S_KUBECONFIG_PATH}/kubectl.kubeconfig
-
 
 kubectl config set-credentials admin \
   --client-certificate=${CA_DIR}/admin.pem \
@@ -130,14 +142,13 @@ kubectl config set-context kubernetes \
 
 kubectl config use-context kubernetes --kubeconfig=${K8S_KUBECONFIG_PATH}/kubectl.kubeconfig
 
-
-############################## sync encryption-config files for kubernetes apiserver ######################################
+# 7.sync kubeconfig files to each nodes for kubernetes cluster
 #master
 sudo ansible master_k8s_vgs -m  synchronize -a "src=${K8S_KUBECONFIG_PATH}/  dest=${K8S_KUBECONFIG_PATH}/ mode=push delete=yes rsync_opts=-avz" -b
 sudo ansible master_k8s_vgs -m shell -a "chmod 666 ${K8S_KUBECONFIG_PATH}/*" -b
-sudo ansible master_k8s_vgs -m shell -a "rm -rf ${K8S_KUBECONFIG_PATH}/{kubelet*,kube-proxy*}" -b
+sudo ansible master_k8s_vgs -m shell -a "cd ${K8S_KUBECONFIG_PATH} && rm -rf bootstap* kube-proxy* kubectl* " -b
 
 #worker
 sudo ansible worker_k8s_vgs -m  synchronize -a "src=${K8S_KUBECONFIG_PATH}/  dest=${K8S_KUBECONFIG_PATH}/ mode=push delete=yes rsync_opts=-avz" -b
 sudo ansible worker_k8s_vgs -m shell -a "chmod 666 ${K8S_KUBECONFIG_PATH}/*" -b
-sudo ansible worker_k8s_vgs -m shell -a "rm -rf ${K8S_KUBECONFIG_PATH}/{kube-controller*,kube-scheduler*}" -b
+sudo ansible worker_k8s_vgs -m shell -a "cd ${K8S_KUBECONFIG_PATH} && rm -rf kube-controller* kube-scheduler* kubectl* " -b
