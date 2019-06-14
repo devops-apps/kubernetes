@@ -26,7 +26,7 @@ DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kuber
 USER=k8s
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
-CLUSTER_RANG_SUBNET=10.254.0.0/22
+SERVICE_CIDR=10.254.0.0/22
 
 
 ### 1.Check if the install directory exists.
@@ -84,7 +84,7 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --authentication-kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
   --authorization-kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
   --client-ca-file=${CA_DIR}/ca.pem \\
-  --service-cluster-ip-range=${CLUSTER_RANG_SUBNET} \\
+  --service-cluster-ip-range=${SERVICE_CIDR} \\
   --cluster-name=kubernetes \\
   --cluster-signing-cert-file=${CA_DIR}/ca.pem \\
   --cluster-signing-key-file=${CA_DIR}/ca-key.pem \\

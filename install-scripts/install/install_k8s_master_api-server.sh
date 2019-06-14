@@ -28,8 +28,8 @@ ETCD_ENDPOIDS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://10.10.10
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
 USER=k8s
-CLUSTER_RANG_SUBNET=10.254.0.0/22
-SERVER_PORT_RANG=8400-9400
+SERVICE_CIDR=10.254.0.0/22
+NODE_PORT_RANG=8400-9400
 
 
 ### 1.Check if the install directory exists.
@@ -286,8 +286,8 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --requestheader-username-headers=X-Remote-User \\
   --enable-bootstrap-token-auth=true \\
   --token-auth-file=${K8S_CONF_PATH}/token.csv \\
-  --service-cluster-ip-range=${CLUSTER_RANG_SUBNET} \\
-  --service-node-port-range=${SERVER_PORT_RANG} \\
+  --service-cluster-ip-range=${SERVICE_CIDR} \\
+  --service-node-port-range=${NODE_PORT_RANG} \\
   --tls-cert-file=${CA_DIR}/kubernetes.pem \\
   --tls-private-key-file=${CA_DIR}/kubernetes-key.pem \\
   --client-ca-file=${CA_DIR}/ca.pem \\
