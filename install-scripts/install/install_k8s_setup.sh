@@ -45,7 +45,7 @@ sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/sysconfig/selinux  >>/dev/
 sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config  >>/dev/null 2>&1
 sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/sysconfig/selinux >>/dev/null 2>&1
 sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/selinux/config  >>/dev/null 2>&1
-echo ".........................................................................."
+echo -e ".........................................................................."
 echo "INFO: Initialization successd of system ..."
 
 #Add sudo permissions to devops in /etc/sudoers file .
@@ -96,7 +96,7 @@ sudo grub2-mkconfig -o /boot/grub2/grub.cfg >>/dev/null 2>&1
 # Update kernel of system
 rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm >>/dev/null 2>&1
 yum --enablerepo=elrepo-kernel install -y kernel-lt >>/dev/null 2>&1
-grub2-set-default 0 >>/dev/null 2>&1
+sudo grub2-set-default 0 >>/dev/null 2>&1
 
 # Disable useless service of system
 systemctl stop postfix>>/dev/null 2>&1  && systemctl disable postfix >>/dev/null 2>&1
@@ -106,10 +106,10 @@ timedatectl set-timezone Asia/Shanghai
 timedatectl set-local-rtc 0
 systemctl restart rsyslog 
 systemctl restart crond
-ntpdate cn.pool.ntp.org /dev/null 2>&1
+ntpdate cn.pool.ntp.org >/dev/null 2>&1
 ntpdate ntp1.aliyun.com
 hwclock -w
-echo ".........................................................................."
+echo -e ".........................................................................."
 echo "INFO: Set successd of system ..."
 
 
@@ -131,6 +131,10 @@ else
            mkdir -p $CA_DIR
       fi
 fi
+
+
+############ Reboot sysytem for update kernel of system . ##############
+reboot now
 
 fi
 #./End

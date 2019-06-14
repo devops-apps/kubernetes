@@ -21,7 +21,6 @@ K8S_CONF_PATH=/etc/k8s/kubernetes
 KUBE_CONFIG_PATH=/etc/k8s/kubeconfig
 CA_DIR=/etc/k8s/ssl
 SOFTWARE=/root/software
-CNI_DIR=/etc/k8s/cni/net.d
 HOSTNAME=`hostname`
 VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
@@ -29,9 +28,11 @@ ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
 USER=k8s
 CLUSTER_DNS_DOMAIN=mo9.com
-CLUSTER_DNS_SVC_IP=10.254.0.2
-CLUSTER_POD_CIDR=172.16.0.0/16
+CLUSTER_DNS_IP=10.254.0.2
+CLUSTER_PODS_CIDR=172.16.0.0/20
 
+
+[ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
 
 ### 1.Check if the install directory exists.
 if [ ! -d "$K8S_INSTALL_PATH" ]; then
@@ -80,7 +81,7 @@ chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.Configure the kubele config settings.
 # configure default system config
-cat >$CONF_PATH/kubelet-config.yaml<<EOF
+cat >${K8S_CONF_PATH}/kubelet-config.yaml<<EOF
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
 address: "${HOSTNAME}"
@@ -113,7 +114,7 @@ healthzPort: 10248
 healthzBindAddress: "${HOSTNAME}"
 clusterDomain: "${CLUSTER_DNS_DOMAIN}"
 clusterDNS:
-  - "${CLUSTER_DNS_SVC_IP}"
+  - "${CLUSTER_DNS_IP}"
 nodeStatusUpdateFrequency: 10s
 nodeStatusReportFrequency: 1m
 imageMinimumGCAge: 2m
@@ -128,7 +129,7 @@ cgroupDriver: cgroupfs
 runtimeRequestTimeout: 10m
 hairpinMode: promiscuous-bridge
 maxPods: 220
-podCIDR: "${CLUSTER_CIDR}"
+podCIDR: "${CLUSTER_PODS_CIDR}"
 podPidsLimit: -1
 resolvConf: /etc/resolv.conf
 maxOpenFiles: 1000000
@@ -161,8 +162,7 @@ After=docker.service
 Requires=docker.service
 
 [Service] 
-User=${USER}
-WorkingDirectory=${K8S_BIN_PATH}
+WorkingDirectory=${K8S_INSTALL_PATH}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --allow-privileged=true \\
   --bootstrap-kubeconfig=${KUBE_CONFIG_PATH}/kubelet-bootstrap.kubeconfig \\
@@ -173,15 +173,15 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --pod-infra-container-image=registry.cn-beijing.aliyuncs.com/k8s_images/pause-amd64:3.1 \\
   --image-pull-progress-deadline=15m \\
   --root-dir=${K8S_INSTALL_PATH}/${KUBE_NAME} \\
-  --cni-conf-dir=${CNI_DIR} \\
+  --cni-conf-dir=/etc/cni/net.d \\
   --container-runtime=docker \\
   --container-runtime-endpoint=unix:///var/run/dockershim.sock \\
-  --volume-plugin-dir=${K8S_INSTALL_PATH}/${KUBE_NAME}/kubelet-plugins/volume/exec/ \\
+  --volume-plugin-dir=${K8S_INSTALL_PATH}/${KUBE_NAME}/plugins \\
   --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
   --alsologtostderr=true \\
   --logtostderr=true \\
   --v=2
-  
+
 Restart=on-failure
 RestartSec=5
 

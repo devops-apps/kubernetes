@@ -349,10 +349,9 @@ chmod 666 *
 sudo ansible master_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
 sudo ansible master_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ mode=push delete=yes rsync_opts=-avz" -b
 sudo ansible master_k8s_vgs -m shell -a "chmod 666 ${CA_DIR}/*" -b
-sudo ansible master_k8s_vgs -m shell -a "rm -rf ${CA_DIR}/admin*" -b
+sudo ansible master_k8s_vgs -m shell -a "cd ${CA_DIR} && rm -rf admin*" -b
 
 #worker
 sudo ansible worker_k8s_vgs -m  shell -a "sudo yum install rsync -y"  > /dev/null 2>&1
-sudo ansible worker_k8s_vgs -m  synchronize -a "src=${CA_DIR}/  dest=${CA_DIR}/ mode=push delete=yes rsync_opts=-avz" -b
-sudo ansible worker_k8s_vgs -m shell -a "chmod 666 ${CA_DIR}/*" -b
-sudo ansible worker_k8s_vgs -m shell -a "rm -rf ${CA_DIR}/{kube-controller-manager*,kubernetes*,kube-scheduler*,etcd*,admin*}" -b
+sudo ansible worker_k8s_vgs -m  copy -a "src=${CA_DIR}/flannel.pem  dest=${CA_DIR}/" -b
+sudo ansible worker_k8s_vgs -m  copy -a "src=${CA_DIR}/flannel-key.pem  dest=${CA_DIR}/" -b

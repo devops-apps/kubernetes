@@ -8,7 +8,7 @@
 # Date:  2016-08-17
 # Email: bighank@163.com
 # QQ:    2658757934
-# blog:  http://home.51cto.com/space?uid=6170059
+# blog:  https://blog.51cto.com/blief
 ######################################################################
 
 
@@ -19,23 +19,22 @@ registry-mirrors2=https://registry-mirrors.mo9.com
 
 
 ### 1.Uninstall the original docker package
-sudo yum -y remove docker docker-client  docker-client-latest  docker-common docker-latest docker-latest-logrotate docker-selinux docker-engine-selinux docker-engine
+sudo yum -y remove docker docker-client  docker-client-latest  docker-common docker-latest docker-latest-logrotate docker-selinux docker-engine-selinux docker-engine >>/dev/null 2>&1
 
 ### 2.Install docker-ce-17.03 docker package
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2 bridge-utils >>/dev/null 2>&1
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo >>/dev/null 2>&1
-sudo yum install -y --setopt=obsoletes=0 docker-ce-17.03.2.ce-1.el7.centos docker-ce-selinux-17.03.2.ce-1.el7.centos >>/dev/null 2>&1
-sudo usermod -aG docker k8s >>/dev/null 2>&1
+ yum install docker-ce-17.03.3.ce -y >>/dev/null 2>&1
+sudo usermod -aG docker k8s 
 
 
 #### 3.Configuration the docker daemon.json
-
-# Create the docker profile directory
+# 3.1 Create the docker profile directory
 if [ ! -d "/etc/docker" ]; then
      mkdir /etc/docker/ 
 fi
 
-# Touch the docker daemon.json file
+# 3.2 Touch the docker daemon.json file
 cat >/etc/docker/daemon.json <<EOF
 {
 	"authorization-plugins": [],
