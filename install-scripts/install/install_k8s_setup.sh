@@ -29,7 +29,7 @@ if [ "$STATE" = "y" ]; then
 ########## Init settings of system ##########
 # Install the system dependencies package.
 yum install -y epel-release >>/dev/null 2>&1
-yum install -y conntrack ipvsadm ipset jq sysstat curl iptables libseccomp ntp telnet >>/dev/null 2>&1
+yum install -y conntrack ipvsadm ipset jq sysstat curl iptables libseccomp ntpdate ntp wget telnet >>/dev/null 2>&1
 
 # Disable the system firewall.
 systemctl stop firewalld >>/dev/null 2>&1
@@ -93,12 +93,21 @@ sudo sed -i "s:numa=off::" /etc/sysconfig/grub
 sudo sed -i "s:centos/swap  rhgb:& numa=off:" /etc/sysconfig/grub
 sudo grub2-mkconfig -o /boot/grub2/grub.cfg >>/dev/null 2>&1
 
+# Update kernel of system
+rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm >>/dev/null 2>&1
+yum --enablerepo=elrepo-kernel install -y kernel-lt >>/dev/null 2>&1
+grub2-set-default 0 >>/dev/null 2>&1
+
+# Disable useless service of system
+systemctl stop postfix>>/dev/null 2>&1  && systemctl disable postfix >>/dev/null 2>&1
+
 # Setting system time zone.
 timedatectl set-timezone Asia/Shanghai
 timedatectl set-local-rtc 0
 systemctl restart rsyslog 
 systemctl restart crond
-ntpdate cn.pool.ntp.org
+ntpdate cn.pool.ntp.org /dev/null 2>&1
+ntpdate ntp1.aliyun.com
 hwclock -w
 echo ".........................................................................."
 echo "INFO: Set successd of system ..."

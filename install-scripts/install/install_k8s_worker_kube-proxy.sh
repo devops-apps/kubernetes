@@ -26,8 +26,7 @@ VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
-USER=k8s
-CLUSTER_RANG_SUBNET=10.254.0.0/22
+CLUSTER_PODS_CIDR=172.16.0.0/20
 
 
 ### 1.Check if the install directory exists.
@@ -66,11 +65,10 @@ fi
 cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_BIN_PATH
 ln -sf  $K8S_BIN_PATH/${KUBE_NAME} /usr/local/bin
-chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.Config the kube-proxy conf.
-cat >${K8S_CONF_PATH}/kube-proxy-config.yaml<<"EOF"
+cat >${K8S_CONF_PATH}/kube-proxy-config.yaml<<EOF
 kind: KubeProxyConfiguration
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 clientConnection:
@@ -81,7 +79,7 @@ bindAddress: ${LISTEN_IP}
 healthzBindAddress: ${LISTEN_IP}:10256
 metricsBindAddress: ${LISTEN_IP}:10249
 enableProfiling: true
-clusterCIDR: ${CLUSTER_RANG_SUBNET}
+clusterCIDR: ${CLUSTER_PODS_CIDR}
 hostnameOverride: ${HOSTNAME}
 mode: "ipvs"
 portRange: ""
@@ -100,8 +98,7 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 After=network.target
 
 [Service]
-User=${USER}
-WorkingDirectory=${K8S_BIN_PATH}
+WorkingDirectory=${K8S_INSTALL_PATH}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --config=${K8S_CONF_PATH}/kube-proxy-config.yaml \\
   --alsologtostderr=true \\
