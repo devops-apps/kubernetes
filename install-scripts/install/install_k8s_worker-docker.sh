@@ -13,28 +13,50 @@
 
 
 #################### Variable parameter setting ######################
-DOCKER-ROOT=/data/apps/docker
-registry-mirrors1=https://docker.mirrors.ustc.edu.cn
-registry-mirrors2=https://registry-mirrors.mo9.com
+DOCKER_INSTALL_PATH=/data/apps/k8s/docker
+SOFTWARE=/root/software
+VERSION=18.09.6
+DOWNLOAD_URL=https://download.docker.com/linux/static/stable/x86_64/docker-${VERSION}.tgz
+MIRRORS1=https://docker.mirrors.ustc.edu.cn
+MIRRORS2=https://registry-mirrors.mo9.com
+USER=docker
 
 
-### 1.Uninstall the original docker package
+[ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
+
+### 1.Uninstall the original docker installation package
 sudo yum -y remove docker docker-client  docker-client-latest  docker-common docker-latest docker-latest-logrotate docker-selinux docker-engine-selinux docker-engine >>/dev/null 2>&1
 
-### 2.Install docker-ce-17.03 docker package
+
+### 2.Install docker-ce package with yum.
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2 bridge-utils >>/dev/null 2>&1
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo >>/dev/null 2>&1
- yum install docker-ce-17.03.3.ce -y >>/dev/null 2>&1
-sudo usermod -aG docker k8s 
+sudo groupadd $USER >>/dev/null 2>&1
+sudo usermod -aG docker k8s
 
 
-#### 3.Configuration the docker daemon.json
-# 3.1 Create the docker profile directory
+### 3.Install docker-ce package with source.
+# Check if the install directory exists.
+if [ ! -d $DOCKER_INSTALL_PATH ]; then
+     mkdir -p $DOCKER_INSTALL_PATH/bin
+     chmod 755 $DOCKER_INSTALL_PATH
+fi
+# Download source package of docker-ce
+if [ ! -f "$SOFTWARE/docker-${VERSION}.tgz" ]; then
+     wget $DOWNLOAD_URL -P $SOFTWARE >>/dev/null 2>&1
+fi
+cd $SOFTWARE && tar -zxf $SOFTWARE/docker-${VERSION}.tgz -C ./
+sudo cp -fp $SOFTWARE/docker/* $DOCKER_INSTALL_PATH/bin
+ln -sf $DOCKER_INSTALL_PATH/bin/{docker,dockerd,docker-init,docker-proxy,containerd,containerd-shim,runc,crt} /usr/local/bin
+
+
+### 4.Create daemon.json file for docker
+# Create daemon.json file  path
 if [ ! -d "/etc/docker" ]; then
-     mkdir /etc/docker/ 
+     mkdir /etc/docker/
 fi
 
-# 3.2 Touch the docker daemon.json file
+# Touch the docker daemon.json file
 cat >/etc/docker/daemon.json <<EOF
 {
 	"authorization-plugins": [],
@@ -42,8 +64,8 @@ cat >/etc/docker/daemon.json <<EOF
 	"dns-opts": [],
 	"dns-search": [],
 	"exec-opts": [],
-	"exec-root": "/data/apps/docker",
-        "graph": "/data/apps/docker",
+	"data-root": "$DOCKER_INSTALL_PATH/data",
+        "exec-root": "$DOCKER_INSTALL_PATH/exec",
 	"experimental": false,
 	"storage-driver": "overlay2",
         "storage-opts": ["overlay2.override_kernel_check=true"  ],
@@ -51,7 +73,6 @@ cat >/etc/docker/daemon.json <<EOF
 	"live-restore": true,
 	"log-driver": "syslog",
 	"log-opts": {},
-	"mtu": 0,
 	"pidfile": "/var/run/docker/docker.pid",
 	"cluster-store": "",
 	"cluster-store-opts": {},
@@ -74,7 +95,6 @@ cat >/etc/docker/daemon.json <<EOF
 	"ipv6": false,
 	"iptables": true,
 	"ip-forward": false,
-	"ip-masq": false,
 	"userland-proxy": false,
 	"userland-proxy-path": "/usr/libexec/docker-proxy",
 	"ip": "0.0.0.0",
@@ -83,7 +103,7 @@ cat >/etc/docker/daemon.json <<EOF
 	"default-gateway": "",
 	"icc": false,
 	"raw-logs": false,
-	"registry-mirrors": ["${registry-mirrors1}", "${registry-mirrors2}"],
+	"registry-mirrors": ["$MIRRORS1", "$MIRRORS2"],
 	"seccomp-profile": "",
 	"insecure-registries": [],
 	"runtimes": {
@@ -101,8 +121,8 @@ cat >/etc/docker/daemon.json <<EOF
 EOF
 
 
-#### 4.Install docker service on worker of kubernetes
-cat >/usr/lib/systemd/system/docker.service <<EOF
+# 5.Install docker service on worker of kubernetes
+cat >/usr/lib/systemd/system/docker.service <<"EOF"
 [Unit]
 Description=Docker Application Container Engine
 Documentation=https://docs.docker.com
@@ -115,7 +135,7 @@ Type=notify
 # exists and systemd currently does not support the cgroup feature set required
 # for containers run by docker
 EnvironmentFile=-/run/flannel/docker
-ExecStart=/usr/bin/dockerd  $DOCKER_NETWORK_OPTIONS
+ExecStart=/usr/local/bin/dockerd  $DOCKER_NETWORK_OPTIONS
 ExecReload=/bin/kill -s HUP $MAINPID
 # Having non-zero Limit*s causes performance problems due to accounting overhead
 # in the kernel. We recommend using cgroups to do container-local accounting.

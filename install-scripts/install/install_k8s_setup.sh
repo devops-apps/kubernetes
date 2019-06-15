@@ -29,7 +29,7 @@ if [ "$STATE" = "y" ]; then
 ########## Init settings of system ##########
 # Install the system dependencies package.
 yum install -y epel-release >>/dev/null 2>&1
-yum install -y conntrack ipvsadm ipset jq sysstat curl iptables libseccomp ntpdate ntp wget telnet >>/dev/null 2>&1
+yum install -y conntrack ipvsadm ipset jq sysstat curl iptables libseccomp ntpdate ntp wget telnet rsync >>/dev/null 2>&1
 
 # Disable the system firewall.
 systemctl stop firewalld >>/dev/null 2>&1

@@ -99,7 +99,7 @@ authentication:
     enabled: false
   webhook:
     enabled: true
-	cacheTTL: 2m0s
+  cacheTTL: 2m0s
   x509:
     clientCAFile: "${CA_DIR}/ca.pem"
 authorization:
