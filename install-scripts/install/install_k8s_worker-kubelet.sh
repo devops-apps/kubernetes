@@ -84,7 +84,7 @@ chmod -R 755 $K8S_INSTALL_PATH
 cat >${K8S_CONF_PATH}/kubelet-config.yaml<<EOF
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
-address: "${HOSTNAME}"
+address: "${LISTEN_IP}"
 staticPodPath: ""
 syncFrequency: 1m
 fileCheckFrequency: 20s
@@ -112,7 +112,7 @@ enableDebuggingHandlers: true
 enableContentionProfiling: true
 healthzPort: 10248
 healthzBindAddress: "${HOSTNAME}"
-clusterDomain: "${CLUSTER_DNS_DOMAIN}"
+clusterDomain: "${CLUSTER_DNS_DOMAIN}."
 clusterDNS:
   - "${CLUSTER_DNS_IP}"
 nodeStatusUpdateFrequency: 10s
@@ -184,6 +184,7 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
 
 Restart=on-failure
 RestartSec=5
+LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
