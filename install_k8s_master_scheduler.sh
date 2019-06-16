@@ -80,7 +80,7 @@ After=etcd.service
 [Service]
 User=${USER}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \
-  --address=127.0.01 \\
+  --address=127.0.0.1 \\
   --kubeconfig=${K8S_KUBECONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
   --leader-elect=true \\
   --alsologtostderr=true \\
