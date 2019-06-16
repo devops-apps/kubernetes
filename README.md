@@ -1,1 +1,1 @@
-Description : This a install scripts repository about kubernetes !
+Description : This a install documentation about kubernetes !
