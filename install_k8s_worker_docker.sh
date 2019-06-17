@@ -120,8 +120,12 @@ cat >/etc/docker/daemon.json <<EOF
 }
 EOF
 
+# 5 Setting firewall rules for docker
+/sbin/iptables -P FORWARD ACCEPT
+sed -i '/iptables -P FORWARD ACCEPT/d' /etc/rc.local
+echo -e "/sbin/iptables -P FORWARD ACCEPT"  >> /etc/rc.local
 
-# 5.Install docker service on worker of kubernetes
+# 6.Install docker service on worker of kubernetes
 cat >/usr/lib/systemd/system/docker.service <<"EOF"
 [Unit]
 Description=Docker Application Container Engine

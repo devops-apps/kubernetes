@@ -31,4 +31,12 @@ etcdctl --endpoints=$FLANNEL_ETCD_ENPOINTS \
   --cert-file=${CA_PATH}/etcd.pem
   --key-file=${CA_PATH}/etcd-key.pem
   mk $FLANNEL_ETCD_PREFIX/config '{"Network":"${NETWORK_SUBNET}","SubnetLen":24,"Backend":{"Type":"$TYPE"}}'
+
+### Bootstrap authorization for kubelet
+kubectl create clusterrolebinding kubelet-bootstrap \
+  --clusterrole=system:node-bootstrapper \
+  --user=kubelet-bootstrap
   
+kubectl create clusterrolebinding kubelet-nodes \
+  --clusterrole=system:node \
+  --group=system:nodes

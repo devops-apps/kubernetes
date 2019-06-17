@@ -82,6 +82,12 @@ metricsBindAddress: ${LISTEN_IP}:10249
 clusterCIDR: ${CLUSTER_PODS_CIDR}
 hostnameOverride: ${HOSTNAME}
 mode: "ipvs"
+portRange: ""
+kubeProxyIPTablesConfiguration:
+  masqueradeAll: false
+kubeProxyIPVSConfiguration:
+  scheduler: rr
+  excludeCIDRs: []
 EOF
 
 ### 4.Install the kube-proxy service.
