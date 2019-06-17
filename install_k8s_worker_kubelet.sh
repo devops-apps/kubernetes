@@ -22,7 +22,7 @@ KUBE_CONFIG_PATH=/etc/k8s/kubeconfig
 CA_DIR=/etc/k8s/ssl
 SOFTWARE=/root/software
 HOSTNAME=`hostname`
-VERSION=v1.12.0
+VERSION=v1.14.2
 DOWNLOAD_URL=https://github.com/devops-apps/download/raw/master/kubernetes/kubernetes-server-${VERSION}-linux-amd64.tar.gz
 ETH_INTERFACE=eth1
 LISTEN_IP=$(ifconfig | grep -A 1 ${ETH_INTERFACE} |grep inet |awk '{print $2}')
@@ -55,17 +55,14 @@ fi
 
 if [ ! -d "$K8S_CONF_PATH" ]; then
      mkdir -p $K8S_CONF_PATH
-     chmod 755 $K8S_CONF_PATH
 fi
 
 if [ ! -d "$KUBE_CONFIG_PATH" ]; then
      mkdir -p $KUBE_CONFIG_PATH
-     chmod 755 $KUBE_CONFIG_PATH
 fi
 
 if [ ! -d "$KUBE_INSTALL_PATH/${KUBE_NAME}" ]; then
      mkdir -p $KUBE_INSTALL_PATH/${KUBE_NAME}
-     chmod 755 $KUBE_INSTALL_PATH/${KUBE_NAME}
 fi
 
 ### 2.Install kubelet binary of kubernetes.
@@ -75,53 +72,81 @@ fi
 cd $SOFTWARE && tar -xzf kubernetes-server-${VERSION}-linux-amd64.tar.gz -C ./
 cp -fp kubernetes/server/bin/$KUBE_NAME $K8S_BIN_PATH
 ln -sf  $K8S_BIN_PATH/${KUBE_NAME} /usr/local/bin
-chown -R $USER:$USER $K8S_INSTALL_PATH
 chmod -R 755 $K8S_INSTALL_PATH
 
 
 ### 3.Configure the kubele config settings.
 # configure default system config
 cat >${K8S_CONF_PATH}/kubelet-config.json<<EOF
-{
-  "kind": "KubeletConfiguration",
-  "apiVersion": "kubelet.config.k8s.io/v1beta1",
-  "authentication": {
-    "x509": {
-      "clientCAFile": "/etc/k8s/ssl/ca.pem"
-    },
-    "webhook": {
-      "enabled": true,
-      "cacheTTL": "2m0s"
-    },
-    "anonymous": {
-      "enabled": false
-    }
-  },
-  "authorization": {
-    "mode": "Webhook",
-    "webhook": {
-      "cacheAuthorizedTTL": "5m0s",
-      "cacheUnauthorizedTTL": "30s"
-    }
-  },
-  "address": "${LISTEN_IP}",
-  "port": 10250,
-  "readOnlyPort": 0,
-  "cgroupDriver": "cgroupfs",
-  "hairpinMode": "promiscuous-bridge",
-  "serializeImagePulls": false,
-  "featureGates": {
-    "RotateKubeletClientCertificate": true,
-    "RotateKubeletServerCertificate": true
-  },
-  "clusterDomain": "${CLUSTER_DNS_DOMAIN}.",
-  "clusterDNS": ["${CLUSTER_DNS_IP}"],
-  "podcidr": "${CLUSTER_PODS_CIDR}",
-  "maxPods": "220",
-  "docker-root": "/data/apps/k8s/docker/data",
-  "fail-swap-on": "false",
-  "volume-plugin-dir": "${K8S_INSTALL_PATH}/${KUBE_NAME}/plugins"
-}
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+address: "${LISTEN_IP}"
+staticPodPath: ""
+syncFrequency: 1m
+fileCheckFrequency: 20s
+httpCheckFrequency: 20s
+staticPodURL: ""
+port: 10250
+readOnlyPort: 0
+rotateCertificates: true
+serverTLSBootstrap: true
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    enabled: true
+  cacheTTL: 2m0s
+  x509:
+    clientCAFile: "${CA_DIR}/ca.pem"
+authorization:
+  mode: Webhook
+registryPullQPS: 0
+registryBurst: 20
+eventRecordQPS: 0
+eventBurst: 20
+enableDebuggingHandlers: true
+enableContentionProfiling: true
+healthzPort: 10248
+healthzBindAddress: "${LISTEN_IP}"
+clusterDomain: "${CLUSTER_DNS_DOMAIN}"
+clusterDNS:
+  - "${CLUSTER_DNS_IP}"
+nodeStatusUpdateFrequency: 10s
+nodeStatusReportFrequency: 1m
+imageMinimumGCAge: 2m
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 80
+volumeStatsAggPeriod: 1m
+kubeletCgroups: ""
+systemCgroups: ""
+cgroupRoot: ""
+cgroupsPerQOS: true
+cgroupDriver: cgroupfs
+runtimeRequestTimeout: 10m
+hairpinMode: promiscuous-bridge
+maxPods: 220
+podCIDR: "${CLUSTER_PODS_CIDR}"
+podPidsLimit: -1
+resolvConf: /etc/resolv.conf
+maxOpenFiles: 1000000
+kubeAPIQPS: 1000
+kubeAPIBurst: 2000
+serializeImagePulls: false
+evictionHard:
+  memory.available:  "100Mi"
+nodefs.available:  "10%"
+nodefs.inodesFree: "5%"
+imagefs.available: "15%"
+evictionSoft: {}
+enableControllerAttachDetach: true
+failSwapOn: true
+containerLogMaxSize: 20Mi
+containerLogMaxFiles: 10
+systemReserved: {}
+kubeReserved: {}
+systemReservedCgroup: ""
+kubeReservedCgroup: ""
+enforceNodeAllocatable: ["pods"]
 EOF
 
 ### 4.Install kube-kubele service.
@@ -138,15 +163,18 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --allow-privileged=true \\
   --bootstrap-kubeconfig=${KUBE_CONFIG_PATH}/kubelet-bootstrap.kubeconfig \\
   --kubeconfig=${KUBE_CONFIG_PATH}/kubelet.kubeconfig \\
-  --config=${K8S_CONF_PATH}/kubelet-config.json \\
+  --config=${K8S_CONF_PATH}/kubelet-config.yaml \\
   --cert-dir=${CA_DIR} \\
   --hostname-override=${HOSTNAME} \\
   --pod-infra-container-image=registry.cn-beijing.aliyuncs.com/k8s_images/pause-amd64:3.1 \\
+  --image-pull-progress-deadline=30m \\
   --event-qps=0 \\
   --kube-api-qps=1000 \\
   --kube-api-burst=2000 \\
   --registry-qps=0 \\
-  --image-pull-progress-deadline=30m \\
+  --cni-conf-dir=/etc/cni/net.d \\
+  --container-runtime=docker \\
+  --container-runtime-endpoint=unix:///var/run/dockershim.sock \\
   --root-dir=${K8S_INSTALL_PATH}/${KUBE_NAME} \\
   --volume-plugin-dir=${K8S_INSTALL_PATH}/${KUBE_NAME}/plugins \\
   --log-dir=${K8S_LOG_DIR}/${KUBE_NAME} \\
