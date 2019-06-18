@@ -35,22 +35,12 @@ CLUSTER_PODS_CIDR=172.16.0.0/20
 [ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
 
 ### 1.Check if the install directory exists.
-if [ ! -d "$K8S_INSTALL_PATH" ]; then
-     mkdir -p $K8S_INSTALL_PATH
+if [ ! -d "$K8S_BIN_PATH" ]; then
      mkdir -p $K8S_BIN_PATH
-else
-     if [ ! -d "$K8S_BIN_PATH" ]; then
-          mkdir -p $K8S_BIN_PATH
-     fi
 fi
 
-if [ ! -d "$K8S_LOG_DIR" ]; then
-     mkdir -p $K8S_LOG_DIR
+if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
      mkdir -p $K8S_LOG_DIR/$KUBE_NAME
-else
-     if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
-          mkdir -p $K8S_LOG_DIR/$KUBE_NAME
-     fi
 fi
 
 if [ ! -d "$K8S_CONF_PATH" ]; then
@@ -61,9 +51,6 @@ if [ ! -d "$KUBE_CONFIG_PATH" ]; then
      mkdir -p $KUBE_CONFIG_PATH
 fi
 
-if [ ! -d "$KUBE_INSTALL_PATH/${KUBE_NAME}" ]; then
-     mkdir -p $KUBE_INSTALL_PATH/${KUBE_NAME}
-fi
 
 ### 2.Install kubelet binary of kubernetes.
 if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then
@@ -77,7 +64,7 @@ chmod -R 755 $K8S_INSTALL_PATH
 
 ### 3.Configure the kubele config settings.
 # configure default system config
-cat >${K8S_CONF_PATH}/kubelet-config.json<<EOF
+cat >${K8S_CONF_PATH}/kubelet-config.yaml <<EOF
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
 address: "${LISTEN_IP}"
@@ -166,7 +153,7 @@ ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --cert-dir=${CA_DIR} \\
   --hostname-override=${HOSTNAME} \\
   --pod-infra-container-image=registry.cn-beijing.aliyuncs.com/k8s_images/pause-amd64:3.1 \\
-  --image-pull-progress-deadline=30m \\
+  --image-pull-progress-deadline=15m \\
   --cni-conf-dir=/etc/cni/net.d \\
   --container-runtime=docker \\
   --container-runtime-endpoint=unix:///var/run/dockershim.sock \\
