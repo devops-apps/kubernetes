@@ -39,14 +39,17 @@ echo -e "/sbin/iptables -P FORWARD ACCEPT"  >> /etc/rc.local
 ### 3.Install docker-ce package with yum.
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2 bridge-utils >>/dev/null 2>&1
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo >>/dev/null 2>&1
-sudo groupadd $USER >>/dev/null 2>&1
 
 
 ### 4.Install docker-ce package with source.
-# Check if the install directory exists.
+# Check if the install directory exists and Check if the docker group exists .
 if [ ! -d $DOCKER_INSTALL_PATH/bin ]; then
      mkdir -p $DOCKER_INSTALL_PATH/bin
-     chmod 755 $DOCKER_INSTALL_PATH
+fi
+
+egrep "^$USER" /etc/group-
+if [ $? -ne 0 ]; then
+     groupadd $USER
 fi
 
 
@@ -98,7 +101,7 @@ cat >/etc/docker/daemon.json <<EOF
 	"api-cors-header": "",
 	"selinux-enabled": false,
 	"userns-remap": "",
-	"group": "",
+	"group": "docker",
 	"cgroup-parent": "",
 	"init": false,
 	"init-path": "/usr/libexec/docker-init",
