@@ -21,16 +21,16 @@ TYPE=vxlan
 
 ### Create network subnet of flannel .
 etcdctl --endpoints=$FLANNEL_ETCD_ENPOINTS \
-  --ca-file=${CA_PATH}/ca.pem \
-  --cert-file=${CA_PATH}/etcd.pem \
-  --key-file=${CA_PATH}/etcd-key.pem \
+  --ca-file=${CA_DIR}/ca.pem \
+  --cert-file=${CA_DIR}/etcd.pem \
+  --key-file=${CA_DIR}/etcd-key.pem \
   mkdir $FLANNEL_ETCD_PREFIX
   
 etcdctl --endpoints=$FLANNEL_ETCD_ENPOINTS \
-  --ca-file=${CA_PATH}/ca.pem \
-  --cert-file=${CA_PATH}/etcd.pem
-  --key-file=${CA_PATH}/etcd-key.pem
-  mk $FLANNEL_ETCD_PREFIX/config '{"Network":"${NETWORK_SUBNET}","SubnetLen":24,"Backend":{"Type":"$TYPE"}}'
+  --ca-file=${CA_DIR}/ca.pem \
+  --cert-file=${CA_DIR}/etcd.pem
+  --key-file=${CA_DIR}/etcd-key.pem
+  mk ${FLANNEL_ETCD_PREFIX}/config '{"Network":"'${NETWORK_SUBNET}'","SubnetLen":24,"Backend":{"Type":"$TYPE"}}'
 
 ### Bootstrap authorization for kubelet
 kubectl create clusterrolebinding kubelet-bootstrap \
