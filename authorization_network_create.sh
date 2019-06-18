@@ -13,6 +13,7 @@
 
 
 #################### Variable parameter setting ######################
+FLANNEL_ETCD_ENPOINTS=https://127.0.0.1:2379
 FLANNEL_ETCD_PREFIX=/k8s/network
 CA_DIR=/etc/k8s/ssl
 NETWORK_SUBNET=172.16.0.0/20
@@ -20,7 +21,7 @@ TYPE=vxlan
 
 
 ### Create network subnet of flannel .
-etcdctl --endpoints=$FLANNEL_ETCD_ENPOINTS \
+etcdctl --endpoint=$FLANNEL_ETCD_ENPOINTS \
   --ca-file=${CA_DIR}/ca.pem \
   --cert-file=${CA_DIR}/etcd.pem \
   --key-file=${CA_DIR}/etcd-key.pem \
