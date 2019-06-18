@@ -21,8 +21,6 @@ FLANNEL_ETCD_ENPOINTS=https://10.10.10.22:2379,https://10.10.10.23:2379,https://
 FLANNEL_ETCD_PREFIX=/k8s/network
 CA_DIR=/etc/k8s/ssl
 IFACE=eth0 
-NETWORK_SUBNET=172.16.0.0
-TYPE=vxlan
 
 
 ### 1.Check if the install directory exists.
