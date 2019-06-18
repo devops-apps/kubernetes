@@ -24,24 +24,33 @@ USER=docker
 
 [ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
 
-### 1.Uninstall the original docker installation package
-sudo yum -y remove docker docker-client  docker-client-latest  docker-common docker-latest docker-latest-logrotate docker-selinux docker-engine-selinux docker-engine >>/dev/null 2>&1
+# 1.Uninstall the original docker installation package
+sudo yum -y remove docker docker-client \
+  docker-client-latest  docker-common docker-latest \
+  docker-latest-logrotate docker-selinux docker-engine-selinux docker-engine >>/dev/null 2>&1
 
 
-### 2.Install docker-ce package with yum.
+### 2 Setting firewall rules for docker
+/sbin/iptables -P FORWARD ACCEPT
+sudo sed -i '/iptables -P FORWARD ACCEPT/d' /etc/rc.local
+echo -e "/sbin/iptables -P FORWARD ACCEPT"  >> /etc/rc.local
+
+
+### 3.Install docker-ce package with yum.
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2 bridge-utils >>/dev/null 2>&1
 sudo yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo >>/dev/null 2>&1
 sudo groupadd $USER >>/dev/null 2>&1
-sudo usermod -aG docker k8s
 
 
-### 3.Install docker-ce package with source.
+### 4.Install docker-ce package with source.
 # Check if the install directory exists.
-if [ ! -d $DOCKER_INSTALL_PATH ]; then
+if [ ! -d $DOCKER_INSTALL_PATH/bin ]; then
      mkdir -p $DOCKER_INSTALL_PATH/bin
      chmod 755 $DOCKER_INSTALL_PATH
 fi
-# Download source package of docker-ce
+
+
+### 5.Download source package of docker-ce
 if [ ! -f "$SOFTWARE/docker-${VERSION}.tgz" ]; then
      wget $DOWNLOAD_URL -P $SOFTWARE >>/dev/null 2>&1
 fi
@@ -50,13 +59,14 @@ sudo cp -fp $SOFTWARE/docker/* $DOCKER_INSTALL_PATH/bin
 ln -sf $DOCKER_INSTALL_PATH/bin/{docker,dockerd,docker-init,docker-proxy,containerd,containerd-shim,runc,ctr} /usr/local/bin
 
 
-### 4.Create daemon.json file for docker
+### 6.Create daemon.json file for docker
 # Create daemon.json file  path
 if [ ! -d "/etc/docker" ]; then
      mkdir /etc/docker/
 fi
 
-# Touch the docker daemon.json file
+
+### 7.Touch the docker daemon.json file
 cat >/etc/docker/daemon.json <<EOF
 {
 	"authorization-plugins": [],
@@ -120,12 +130,8 @@ cat >/etc/docker/daemon.json <<EOF
 }
 EOF
 
-# 5 Setting firewall rules for docker
-/sbin/iptables -P FORWARD ACCEPT
-sed -i '/iptables -P FORWARD ACCEPT/d' /etc/rc.local
-echo -e "/sbin/iptables -P FORWARD ACCEPT"  >> /etc/rc.local
 
-# 6.Install docker service on worker of kubernetes
+### 8.Install docker service on worker of kubernetes
 cat >/usr/lib/systemd/system/docker.service <<"EOF"
 [Unit]
 Description=Docker Application Container Engine

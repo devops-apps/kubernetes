@@ -37,6 +37,4 @@ kubectl create clusterrolebinding kubelet-bootstrap \
   --clusterrole=system:node-bootstrapper \
   --user=kubelet-bootstrap
   
-kubectl create clusterrolebinding kubelet-nodes \
-  --clusterrole=system:node \
-  --group=system:nodes
+kubectl create -f https://raw.githubusercontent.com/devops-apps/kubernetes/v1.14.x/kubernetes_autho_authen_ca.yaml
