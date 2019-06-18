@@ -30,33 +30,23 @@ USER=k8s
 
 [ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
 ### 1.Check if the install directory exists.
-if [ ! -d "$K8S_INSTALL_PATH" ]; then
-     mkdir -p $K8S_INSTALL_PATH
+### 1.Check if the install directory exists.
+if [ ! -d "$K8S_BIN_PATH" ]; then
      mkdir -p $K8S_BIN_PATH
-else
-     if [ ! -d "$K8S_BIN_PATH" ]; then
-          mkdir -p $K8S_BIN_PATH
-     fi
 fi
 
-if [ ! -d "$K8S_LOG_DIR" ]; then
-     mkdir -p $K8S_LOG_DIR
+if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
      mkdir -p $K8S_LOG_DIR/$KUBE_NAME
-else
-     if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
-          mkdir -p $K8S_LOG_DIR/$KUBE_NAME
-     fi
 fi
 
 if [ ! -d "$K8S_CONF_PATH" ]; then
      mkdir -p $K8S_CONF_PATH
-     chmod 755 $K8S_CONF_PATH
 fi
 
 if [ ! -d "$KUBE_CONFIG_PATH" ]; then
      mkdir -p $KUBE_CONFIG_PATH
-     chmod 755 $KUBE_CONFIG_PATH
 fi
+
 
 ### 2.Install kube-scheduler binary of kubernetes.
 if [ ! -f "$SOFTWARE/kubernetes-server-${VERSION}-linux-amd64.tar.gz" ]; then

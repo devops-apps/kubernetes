@@ -37,13 +37,8 @@ if [ ! -d "$K8S_BIN_PATH" ]; then
      mkdir -p $K8S_BIN_PATH
 fi
 
-if [ ! -d "$K8S_LOG_DIR" ]; then
-     mkdir -p $K8S_LOG_DIR 
-	 mkdir -p $K8S_LOG_DIR/$KUBE_NAME
-else
-     if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
-          mkdir -p $K8S_LOG_DIR/$KUBE_NAME
-     fi
+if [ ! -d "$K8S_LOG_DIR/$KUBE_NAME" ]; then
+     mkdir -p $K8S_LOG_DIR/$KUBE_NAME
 fi
 
 if [ ! -d "$K8S_CONF_PATH" ]; then

@@ -30,12 +30,10 @@ USER=k8s
 
 [ `id -u` -ne 0 ] && echo "The user no permission exec the scripts, Please use root is exec it..." && exit 0
 ### 1.Check if the install directory exists.
-if [ ! -d $ETCD_INSTALL_PATH ]; then
-     mkdir $ETCD_INSTALL_PATH
+if [ ! -d $ETCD_BIN_DIR ]; then
      mkdir -p $ETCD_BIN_DIR
      mkdir -p $ETCD_DATA_DIR
      mkdir -p $ETCD_WAL_DIR
-     chmod 0755 $ETCD_INSTALL_PATH
 fi
 
 ### 2.Install etcd binary of kubernetes.
