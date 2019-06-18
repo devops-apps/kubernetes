@@ -1,1 +1,1 @@
-Description : This a install documentation about kubernetes !
+Description : This a installation manual about kubernetes !

@@ -98,15 +98,16 @@ After=etcd.service
 
 [Service]
 User=${USER}
+WorkingDirectory=${K8S_INSTALL_PATH}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --config=/etc/k8s/kubernetes/kube-scheduler.yaml \\
   --bind-address=${LISTEN_IP} \\
   --secure-port=10259 \\
   --tls-cert-file=${CA_DIR}/kube-scheduler.pem \\
   --tls-private-key-file=${CA_DIR}/kube-scheduler-key.pem \\
-  --kubeconfig=${K8S_KUBECONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
-  --authentication-kubeconfig=${K8S_KUBECONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
-  --authorization-kubeconfig=${K8S_KUBECONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
+  --kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
+  --authentication-kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
+  --authorization-kubeconfig=${KUBE_CONFIG_PATH}/${KUBE_NAME}.kubeconfig \\
   --client-ca-file=${CA_DIR}/ca.pem \\
   --requestheader-allowed-names="" \\
   --requestheader-client-ca-file=${CA_DIR}/ca.pem \\

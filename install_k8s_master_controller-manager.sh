@@ -76,8 +76,8 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 
 [Service]
-WorkingDirectory=${K8S_INSTALL_PATH}
 User=${USER}
+WorkingDirectory=${K8S_INSTALL_PATH}
 ExecStart=${K8S_BIN_PATH}/${KUBE_NAME} \\
   --port=10252 \\
   --secure-port=10257 \\
